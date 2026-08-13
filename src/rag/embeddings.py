@@ -17,7 +17,7 @@ Biomedical Embeddings — 生物医学领域嵌入模型封装。
 import logging
 from typing import List
 
-from langchain_community.embeddings import HuggingFaceEmbeddings
+from langchain_huggingface import HuggingFaceEmbeddings
 
 logger = logging.getLogger(__name__)
 
