@@ -10,12 +10,12 @@ Biomedical Vector Store — ChromaDB 向量存储封装。
 """
 
 import logging
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 import chromadb
 from chromadb.config import Settings
-from langchain_core.documents import Document
 from langchain_chroma import Chroma
+from langchain_core.documents import Document
 
 logger = logging.getLogger(__name__)
 
@@ -58,7 +58,7 @@ class BiomedicalVectorStore:
 
     def index_documents(
         self,
-        documents: List[Document],
+        documents: list[Document],
         embedding_function,
         batch_size: int = 100,
     ) -> int:
@@ -121,7 +121,7 @@ class BiomedicalVectorStore:
         query: str,
         embedding_function,
         k: int = 10,
-    ) -> List[Dict[str, Any]]:
+    ) -> list[dict[str, Any]]:
         """语义搜索 — 返回最相关的 k 个文档块。
 
         Args:
@@ -158,7 +158,7 @@ class BiomedicalVectorStore:
 
     # ── 统计 ──────────────────────────────────────────────────────────
 
-    def get_stats(self) -> Dict[str, Any]:
+    def get_stats(self) -> dict[str, Any]:
         """获取集合统计信息。
 
         Returns:

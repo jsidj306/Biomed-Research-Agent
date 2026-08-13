@@ -14,7 +14,6 @@ Arxiv Search Tool — LangChain BaseTool 封装。
 """
 
 import logging
-from typing import Optional, Type
 
 import arxiv
 from langchain.tools import BaseTool
@@ -67,7 +66,7 @@ class ArxivSearchTool(BaseTool):
         "Best for: finding the latest methods before formal publication, "
         "interdisciplinary ML+biomedicine papers, and preprints not yet in PubMed."
     )
-    args_schema: Type[BaseModel] = ArxivSearchInput
+    args_schema: type[BaseModel] = ArxivSearchInput
 
     # ── 公开入口 ──────────────────────────────────────────────────────
 
@@ -154,7 +153,7 @@ class ArxivSearchTool(BaseTool):
 
 # ── 快速测试入口 ──────────────────────────────────────────────────────
 
-if __name__ == "__main__":
+if __name__ == "__main__":  # pragma: no cover
     logging.basicConfig(level=logging.INFO)
 
     tool = ArxivSearchTool()

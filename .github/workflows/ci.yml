@@ -1,0 +1,35 @@
+name: CI
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: uv sync
+
+      - name: Lint (ruff)
+        run: uv run ruff check src/ tests/
+
+      - name: Import smoke test
+        run: uv run python -c "import src.rag.rag_pipeline, src.rag.vector_store, src.rag.document_loader, src.rag.text_splitter, src.rag.embeddings, src.tools.pubmed_tool, src.tools.arxiv_tool, src.agents.summarizer; print('imports OK')"
+
+      - name: Test with coverage
+        run: uv run pytest -m "not slow" --cov-fail-under=70

@@ -9,15 +9,14 @@ Streamlit UI Components — 可复用的论文展示组件。
     render_paper_card(paper, index=1)
 """
 
-from typing import Any, Dict, List
+from typing import Any
 
 import streamlit as st
-
 
 # ── 论文卡片 ────────────────────────────────────────────────────────────
 
 
-def render_paper_card(paper: Dict[str, Any], index: int = 1) -> None:
+def render_paper_card(paper: dict[str, Any], index: int = 1) -> None:
     """渲染单篇论文的展开式卡片。
 
     默认折叠摘要，点击展开后可选择生成 LLM 结构化摘要。
@@ -45,7 +44,7 @@ def render_paper_card(paper: Dict[str, Any], index: int = 1) -> None:
         with col1:
             author_str = ", ".join(authors[:3])
             if len(authors) > 3:
-                author_str += f" et al."
+                author_str += " et al."
             st.caption(f"👤 {author_str}" if author_str else "👤 Unknown")
         with col2:
             source_info = f"📰 {journal} ({year})" if journal else f"📅 {year}" if year else ""
@@ -75,7 +74,7 @@ def render_paper_card(paper: Dict[str, Any], index: int = 1) -> None:
         st.caption(f"{id_label}: `{source_id}`")
 
 
-def render_paper_list(papers: List[Dict[str, Any]], max_display: int = 10) -> None:
+def render_paper_list(papers: list[dict[str, Any]], max_display: int = 10) -> None:
     """渲染论文列表。
 
     Args:
@@ -96,7 +95,7 @@ def render_paper_list(papers: List[Dict[str, Any]], max_display: int = 10) -> No
 # ── 摘要展示 ────────────────────────────────────────────────────────────
 
 
-def render_brief_summary(data: Dict[str, str]) -> None:
+def render_brief_summary(data: dict[str, str]) -> None:
     """渲染简短摘要 (one_liner + takeaway)。"""
     if not data:
         return
@@ -108,7 +107,7 @@ def render_brief_summary(data: Dict[str, str]) -> None:
         st.markdown(f"🔑 {takeaway}")
 
 
-def render_detailed_summary(data: Dict[str, str]) -> None:
+def render_detailed_summary(data: dict[str, str]) -> None:
     """渲染详细四段式摘要。"""
     if not data:
         return
@@ -124,7 +123,7 @@ def render_detailed_summary(data: Dict[str, str]) -> None:
             st.markdown(f"**{label}:** {content}")
 
 
-def render_key_findings(data: Dict[str, Any]) -> None:
+def render_key_findings(data: dict[str, Any]) -> None:
     """渲染关键发现要点列表。"""
     if not data:
         return
@@ -137,7 +136,7 @@ def render_key_findings(data: Dict[str, Any]) -> None:
         st.markdown(f"---\n📊 **Significance:** {significance}")
 
 
-def render_summary_tabs(summary_result: Dict[str, Any]) -> None:
+def render_summary_tabs(summary_result: dict[str, Any]) -> None:
     """以标签页形式展示所有摘要类型。
 
     Args:
@@ -177,7 +176,7 @@ def render_summary_tabs(summary_result: Dict[str, Any]) -> None:
 # ── 侧边栏配置 ──────────────────────────────────────────────────────────
 
 
-def render_sidebar() -> Dict[str, Any]:
+def render_sidebar() -> dict[str, Any]:
     """渲染侧边栏配置面板。
 
     Returns:

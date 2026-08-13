@@ -17,7 +17,6 @@ from src.agents.summarizer import (
     PaperSummarizer,
 )
 
-
 # ── Fixtures ────────────────────────────────────────────────────────────
 
 
@@ -395,6 +394,43 @@ class TestJSONParsing:
             title=sample_title, abstract=sample_abstract, summary_type="brief",
         )
         assert result["brief"]["one_liner"] == "result."
+
+
+# ── LLM 错误处理测试 ────────────────────────────────────────────────────
+
+
+class TestLLMErrorHandling:
+    """测试 LLM 返回异常时的降级处理。"""
+
+    @patch.dict(os.environ, {"OPENAI_API_KEY": "test-key", "OPENAI_BASE_URL": "https://test.api.com/v1"})
+    @patch("src.agents.summarizer.ChatOpenAI")
+    def test_unparseable_response_raises(self, MockChatOpenAI):
+        """完全无法解析的响应应抛出 ValueError。"""
+        mock_llm = MagicMock()
+        mock_response = MagicMock()
+        mock_response.content = "completely invalid not-json response"
+        mock_llm.invoke.return_value = mock_response
+        MockChatOpenAI.return_value = mock_llm
+
+        s = PaperSummarizer()
+        s.llm = mock_llm
+
+        # 用 __wrapped__ 绕过 tenacity retry，直接测解析逻辑
+        with pytest.raises(ValueError):
+            s._call_llm.__wrapped__(s, "test prompt")
+
+    @patch.dict(os.environ, {"OPENAI_API_KEY": "test-key", "OPENAI_BASE_URL": "https://test.api.com/v1"})
+    @patch("src.agents.summarizer.ChatOpenAI")
+    def test_summarize_handles_llm_error(self, MockChatOpenAI, sample_title, sample_abstract):
+        """LLM 调用抛异常时，摘要结果应降级为 None 而非崩溃。"""
+        s = PaperSummarizer()
+        s._call_llm = MagicMock(side_effect=Exception("LLM down"))
+
+        result = s.summarize(
+            title=sample_title, abstract=sample_abstract, summary_type="brief",
+        )
+        assert result["brief"] is None
+        assert result["paper_title"] == sample_title
 
 
 # ── Prompt 模板测试 ─────────────────────────────────────────────────────

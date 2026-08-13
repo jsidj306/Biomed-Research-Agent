@@ -1,9 +1,10 @@
 """Tests for Arxiv Search Tool."""
 
-import pytest
 from unittest.mock import MagicMock, patch
 
-from src.tools.arxiv_tool import ArxivSearchTool, ArxivSearchInput
+import pytest
+
+from src.tools.arxiv_tool import ArxivSearchInput, ArxivSearchTool
 
 
 class TestArxivSearchInput:

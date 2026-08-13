@@ -161,11 +161,8 @@ class TestComponentImports:
         from src.ui.components import (
             render_paper_card,
             render_paper_list,
-            render_brief_summary,
-            render_detailed_summary,
-            render_key_findings,
-            render_summary_tabs,
             render_sidebar,
+            render_summary_tabs,
         )
         assert callable(render_paper_card)
         assert callable(render_paper_list)
@@ -177,8 +174,6 @@ class TestComponentImports:
         from src.ui import (
             render_paper_card,
             render_paper_list,
-            render_summary_tabs,
-            render_sidebar,
         )
         assert callable(render_paper_card)
         assert callable(render_paper_list)
@@ -288,7 +283,6 @@ class TestSidebarConfig:
     def test_config_keys(self):
         """验证配置包含所有必需键。"""
         # 不调用 Streamlit，直接验证配置结构
-        expected_keys = {"search_source", "max_results", "summary_type", "language", "model"}
         # render_sidebar 需要在 Streamlit runtime 中运行，此处验证函数存在
         from src.ui.components import render_sidebar
         assert callable(render_sidebar)

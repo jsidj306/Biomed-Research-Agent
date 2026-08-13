@@ -1,9 +1,10 @@
 """Tests for PubMed Search Tool."""
 
-import pytest
 from unittest.mock import MagicMock, patch
 
-from src.tools.pubmed_tool import PubMedSearchTool, PubMedSearchInput
+import pytest
+
+from src.tools.pubmed_tool import PubMedSearchInput, PubMedSearchTool
 
 
 class TestPubMedSearchInput:
@@ -44,8 +45,12 @@ class TestPubMedSearchTool:
         assert "PubMed" in tool.description
         assert tool.args_schema == PubMedSearchInput
 
-    def test_empty_results(self):
+    @patch("Bio.Entrez.read")
+    @patch("Bio.Entrez.esearch")
+    def test_empty_results(self, mock_esearch, mock_read):
         """无结果时返回空列表而非异常。"""
+        mock_read.return_value = {"IdList": [], "Count": "0"}
+
         tool = PubMedSearchTool()
         result = tool._search_pubmed("xyznonexistentquery1234567890", max_results=5)
         assert result["total_count"] == 0

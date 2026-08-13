@@ -26,3 +26,34 @@ dependencies = [
     "tenacity>=9.1.4",
     "uvicorn>=0.52.1",
 ]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = "test_*.py"
+python_classes = "Test*"
+python_functions = "test_*"
+addopts = [
+    "-v",
+    "--tb=short",
+    "--cov=src",
+    "--cov-report=term-missing",
+]
+markers = [
+    "slow: 需要下载/加载大模型（PubMedBERT），运行缓慢",
+]
+
+[dependency-groups]
+dev = [
+    "ruff>=0.16.2",
+]
+
+[tool.ruff]
+target-version = "py311"
+line-length = 100
+
+[tool.ruff.lint]
+ignore = [
+    "B017",   # pytest.raises(Exception)：项目有意捕获宽泛异常以测试降级逻辑
+    "BLE001", # 盲 except Exception：降级策略，保证 Agent 不因单点失败崩溃
+    "S110",   # try-except-pass：集合不存在/删除失败等场景的防御性处理
+]

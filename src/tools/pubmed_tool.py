@@ -17,7 +17,6 @@ PubMed Search Tool — LangChain BaseTool 封装。
 import logging
 import os
 import time
-from typing import Optional, Type
 
 from Bio import Entrez
 from dotenv import load_dotenv
@@ -87,7 +86,7 @@ class PubMedSearchTool(BaseTool):
         "Best for: clinical trials, drug discovery, disease mechanisms, "
         "gene function studies, and any biomedical literature searches."
     )
-    args_schema: Type[BaseModel] = PubMedSearchInput
+    args_schema: type[BaseModel] = PubMedSearchInput
 
     # ── 内部状态 ──────────────────────────────────────────────────────
 
@@ -297,9 +296,8 @@ class PubMedSearchTool(BaseTool):
             # --- DOI ---
             doi = ""
             for eid in article.get("PubmedData", {}).get("ArticleIdList", []):
-                if hasattr(eid, "attributes"):
-                    if eid.attributes.get("IdType") == "doi":
-                        doi = str(eid)
+                if hasattr(eid, "attributes") and eid.attributes.get("IdType") == "doi":
+                    doi = str(eid)
 
             # --- URL ---
             url = f"https://pubmed.ncbi.nlm.nih.gov/{pmid}/"
@@ -334,7 +332,7 @@ class PubMedSearchTool(BaseTool):
 
 # ── 快速测试入口 ──────────────────────────────────────────────────────
 
-if __name__ == "__main__":
+if __name__ == "__main__":  # pragma: no cover
     logging.basicConfig(level=logging.INFO)
 
     tool = PubMedSearchTool()

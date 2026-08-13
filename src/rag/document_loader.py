@@ -11,12 +11,10 @@ PyMuPDF 优势（相比 PyPDF2）:
 """
 
 import logging
-import os
 from pathlib import Path
-from typing import List
 
-from langchain_core.documents import Document
 from langchain_community.document_loaders import PyMuPDFLoader, TextLoader
+from langchain_core.documents import Document
 
 logger = logging.getLogger(__name__)
 
@@ -30,9 +28,9 @@ class BiomedicalDocumentLoader:
         SUPPORTED_EXTENSIONS: 支持的文件扩展名集合
     """
 
-    SUPPORTED_EXTENSIONS = {".pdf", ".txt"}
+    SUPPORTED_EXTENSIONS = frozenset({".pdf", ".txt"})
 
-    def load_pdf(self, file_path: str) -> List[Document]:
+    def load_pdf(self, file_path: str) -> list[Document]:
         """加载单个 PDF 文件，每页为一个 Document。
 
         Args:
@@ -47,7 +45,7 @@ class BiomedicalDocumentLoader:
         logger.info("Loaded %d pages from PDF", len(documents))
         return documents
 
-    def load_text(self, file_path: str) -> List[Document]:
+    def load_text(self, file_path: str) -> list[Document]:
         """加载纯文本文件。
 
         Args:
@@ -60,7 +58,7 @@ class BiomedicalDocumentLoader:
         loader = TextLoader(file_path, encoding="utf-8")
         return loader.load()
 
-    def load(self, file_path: str) -> List[Document]:
+    def load(self, file_path: str) -> list[Document]:
         """自动识别文件类型并加载。
 
         Args:

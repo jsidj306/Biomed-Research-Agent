@@ -15,7 +15,6 @@ Biomedical Embeddings — 生物医学领域嵌入模型封装。
 """
 
 import logging
-from typing import List
 
 from langchain_huggingface import HuggingFaceEmbeddings
 
@@ -67,7 +66,7 @@ class BiomedicalEmbeddings:
         self.model_name = resolved
         logger.info("Embedding model ready: %s", resolved)
 
-    def embed_documents(self, texts: List[str]) -> List[List[float]]:
+    def embed_documents(self, texts: list[str]) -> list[list[float]]:
         """批量嵌入文档块。
 
         Args:
@@ -78,7 +77,7 @@ class BiomedicalEmbeddings:
         """
         return self.embedding_model.embed_documents(texts)
 
-    def embed_query(self, query: str) -> List[float]:
+    def embed_query(self, query: str) -> list[float]:
         """嵌入搜索查询。
 
         Args:

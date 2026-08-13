@@ -20,7 +20,7 @@ Paper Summarizer — LLM 驱动的论文摘要生成器。
 
 import logging
 import os
-from typing import Any, Dict, List, Literal, Optional
+from typing import Any, Literal
 
 from dotenv import load_dotenv
 from langchain_openai import ChatOpenAI
@@ -135,7 +135,7 @@ class PaperSummarizer:
         abstract: str,
         summary_type: Literal["brief", "detailed", "key_findings", "all"] = "all",
         language: str = "english",
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """对单篇论文生成摘要。
 
         Args:
@@ -197,10 +197,10 @@ class PaperSummarizer:
 
     def summarize_batch(
         self,
-        papers: List[Dict[str, str]],
+        papers: list[dict[str, str]],
         summary_type: Literal["brief", "detailed", "key_findings", "all"] = "all",
         language: str = "english",
-    ) -> List[Dict[str, Any]]:
+    ) -> list[dict[str, Any]]:
         """批量生成摘要。
 
         Args:
@@ -245,7 +245,7 @@ class PaperSummarizer:
         wait=wait_exponential(multiplier=1, min=2, max=10),
         before_sleep=before_sleep_log(logger, logging.WARNING),
     )
-    def _call_llm(self, prompt: str) -> Dict[str, Any]:
+    def _call_llm(self, prompt: str) -> dict[str, Any]:
         """调用 LLM 并解析 JSON 响应。
 
         内置 3 次重试 + 指数退避 (2s → 4s → 8s)。
@@ -268,8 +268,7 @@ class PaperSummarizer:
         if content.startswith("```"):
             lines = content.split("\n")
             content = "\n".join(lines[1:]) if len(lines) > 1 else content
-            if content.endswith("```"):
-                content = content[:-3]
+            content = content.removesuffix("```")
             content = content.strip()
 
         try:
@@ -282,7 +281,7 @@ class PaperSummarizer:
                 return json.loads(content[start:end])
             raise ValueError(f"Failed to parse LLM response as JSON: {content[:200]}")
 
-    def _empty_result(self, title: str, summary_type: str) -> Dict[str, Any]:
+    def _empty_result(self, title: str, summary_type: str) -> dict[str, Any]:
         """返回空摘要结果（当输入文本过短时）。"""
         return {
             "paper_title": title,
@@ -298,7 +297,7 @@ class PaperSummarizer:
 
 # ── 快速测试入口 ──────────────────────────────────────────────────────
 
-if __name__ == "__main__":
+if __name__ == "__main__":  # pragma: no cover
     logging.basicConfig(level=logging.INFO)
 
     summarizer = PaperSummarizer()

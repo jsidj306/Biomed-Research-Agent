@@ -9,16 +9,6 @@ from langchain_core.documents import Document
 from src.rag.vector_store import BiomedicalVectorStore
 
 
-class FakeEmbeddings:
-    """Fake embedding function for testing — returns deterministic vectors."""
-
-    def embed_documents(self, texts):
-        return [[float(hash(t) % 100) / 100.0] * 384 for t in texts]
-
-    def embed_query(self, text):
-        return [float(hash(text) % 100) / 100.0] * 384
-
-
 class TestBiomedicalVectorStore:
     """向量存储测试（使用 FakeEmbeddings 避免下载模型）。"""
 
@@ -33,10 +23,6 @@ class TestBiomedicalVectorStore:
         yield store
         # Cleanup
         shutil.rmtree(tmpdir, ignore_errors=True)
-
-    @pytest.fixture
-    def fake_emb(self):
-        return FakeEmbeddings()
 
     @pytest.fixture
     def sample_docs(self):

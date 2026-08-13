@@ -7,7 +7,7 @@ Mark with pytest -m "slow" to optionally skip in CI fast path.
 import numpy as np
 import pytest
 
-from src.rag.embeddings import BiomedicalEmbeddings, _MODEL_REGISTRY
+from src.rag.embeddings import _MODEL_REGISTRY, BiomedicalEmbeddings
 
 
 class TestModelRegistry:
@@ -28,7 +28,8 @@ class TestBiomedicalEmbeddings:
     """嵌入模型测试（需要下载模型）。"""
 
     @pytest.fixture(scope="class")
-    def embeddings(self):
+    @classmethod
+    def embeddings(cls):
         """共享嵌入模型实例，避免重复下载。"""
         return BiomedicalEmbeddings("pubmedbert")
 

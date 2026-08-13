@@ -15,7 +15,6 @@ Biomedical Text Splitter — 学术论文优化的递归分块策略。
 """
 
 import logging
-from typing import List, Optional
 
 from langchain_core.documents import Document
 from langchain_text_splitters import RecursiveCharacterTextSplitter
@@ -37,7 +36,7 @@ class BiomedicalTextSplitter:
         self,
         chunk_size: int = 1000,
         chunk_overlap: int = 200,
-        separators: Optional[List[str]] = None,
+        separators: list[str] | None = None,
     ):
         """初始化分块器。
 
@@ -63,7 +62,7 @@ class BiomedicalTextSplitter:
             length_function=len,
         )
 
-    def split(self, documents: List[Document]) -> List[Document]:
+    def split(self, documents: list[Document]) -> list[Document]:
         """对文档列表分块，保留原始元数据并添加块序号。
 
         Args:
@@ -90,7 +89,7 @@ class BiomedicalTextSplitter:
 
         return chunks
 
-    def _validate_chunks(self, chunks: List[Document]):
+    def _validate_chunks(self, chunks: list[Document]):
         """内部质量检查：确保没有空块，大部分块大小合理。"""
         empty = [c for c in chunks if len(c.page_content.strip()) == 0]
         if empty:

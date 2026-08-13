@@ -13,7 +13,7 @@ RAG Pipeline — 一键从 PDF 到可检索知识库。
 """
 
 import logging
-from typing import Any, Dict, List
+from typing import Any
 
 from src.rag.document_loader import BiomedicalDocumentLoader
 from src.rag.embeddings import BiomedicalEmbeddings
@@ -97,7 +97,7 @@ class RAGPipeline:
 
         return count
 
-    def ingest_texts(self, texts: List[str], metadata_list: List[Dict] = None) -> int:
+    def ingest_texts(self, texts: list[str], metadata_list: list[dict] | None = None) -> int:
         """摄入纯文本列表（如 PubMed 摘要）。
 
         Args:
@@ -124,7 +124,7 @@ class RAGPipeline:
 
     # ── 搜索 ──────────────────────────────────────────────────────────
 
-    def search(self, query: str, k: int = 5) -> List[Dict[str, Any]]:
+    def search(self, query: str, k: int = 5) -> list[dict[str, Any]]:
         """语义搜索知识库。
 
         Args:
@@ -149,7 +149,7 @@ class RAGPipeline:
 
     # ── 统计 ──────────────────────────────────────────────────────────
 
-    def get_stats(self) -> Dict[str, Any]:
+    def get_stats(self) -> dict[str, Any]:
         """获取 Pipeline 整体统计。"""
         return {
             **self.store.get_stats(),
