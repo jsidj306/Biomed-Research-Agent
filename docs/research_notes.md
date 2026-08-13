@@ -73,3 +73,62 @@ PubMed "CRISPR cancer" (3420篇)
 - [ ] 多语言文献支持 (中文 + 英文)
 - [ ] Agent 自主决策循环的实现方案
 - [ ] Gradio vs Streamlit 前端选型
+
+---
+
+## 2026-08-13
+
+### 第1-2周 MVP 开发复盘
+
+#### 完成情况
+
+- 实际工时：约 60 小时（Day 3–14，与计划吻合）
+- 完成率：**27/30** 项检查（任务 1–6 全部完成，任务 7 演示待录制）
+- 核心闭环跑通：**搜索 → RAG 检索 → LLM 结构化摘要 → UI 渲染**
+- 测试：**86 passed + 4 deselected(slow)，覆盖率 82%**（门禁 ≥70%）
+
+#### 技术收获
+
+1. **LangChain BaseTool 封装模式**：PubMed/Arxiv 统一 `{papers, total_count, query, source}` 返回格式，下游（UI/Agent）无需区分来源，为 V1.0 多数据源扩展打好基础。
+2. **RAG Pipeline 调参经验**：chunk=1000/overlap=200 针对生物医学长句优化；PubMedBERT 768 维本地嵌入零 API 成本且领域适配，语义检索效果优于通用模型。
+3. **LLM 摘要结构化 Prompt 化**：三种摘要类型（brief/detailed/key_findings）各自独立 prompt，temperature=0.3 保证一致性；JSON 解析三级容错（markdown fence 去除 → 直接解析 → 子串提取）解决 LLM 输出不稳定问题。
+4. **Streamlit 状态管理**：`st.session_state` 三件套（messages / current_papers / search_triggered）+ `@st.cache_resource` 缓存工具实例，避免重复初始化 PubMed/Arxiv/Summarizer，实现多轮对话与按需摘要。
+
+#### 踩坑记录
+
+1. **坑**：`FakeEmbeddings` 用 `hash()` 导致测试 flaky（Python 每进程随机盐）。
+   **解决**：改用 `zlib.crc32` 做确定性向量，测试稳定。
+2. **坑**：langchain-community / chroma wrapper 陆续被官方 sunset，出现 DeprecationWarning。
+   **解决**：迁移到独立包 `langchain-huggingface` + `langchain-chroma`。
+3. **坑**：NCBI 真实 API 调用导致测试慢且依赖网络。
+   **解决**：mock Entrez；PubMedBERT 模型下载类测试标 `@pytest.mark.slow`，CI 用 `-m "not slow"` 跳过。
+
+#### 为第3-4周的准备
+
+- [ ] 重新阅读 LangGraph Quick Start（用 StateGraph 重构 Agent 编排）
+- [ ] 注册 Semantic Scholar API Key（等待审核中）
+- [ ] 了解 BGE-Reranker 重排序原理
+- [ ] 了解 LangFuse 监控接入方式
+- [ ] 学习混合检索（BM25 + 语义搜索 + RRF 融合）
+
+#### 对架构的重新思考
+
+- MVP 的单文件 Tool 设计（每个源一个 BaseTool 类）可扩展到 5 个数据源，但需要统一的注册/调度层。
+- 当前 `search_papers()` 是串行循环，多数据源应改为并发（asyncio）以缩短响应时间。
+- `src/ui/app.py` 主编排逻辑较重（44% 覆盖率靠 mock），V1.0 建议抽出业务层，UI 只做渲染。
+- 摘要触发目前是手动模式（避免浪费 API 配额），V1.0 可改为可配置的自动摘要。
+
+#### MVP 交付验收（10 项确认）
+
+| # | 验收项 | 状态 |
+|---|--------|------|
+| 1 | PubMed Search Tool | ✅ 实测命中 73 篇 |
+| 2 | Arxiv Search Tool | ✅ 实测命中 5 篇 |
+| 3 | RAG Pipeline 全链路 | ✅ 测试通过 |
+| 4 | 结构化摘要（5 段） | ✅ GPT-4o-mini 实测生成 |
+| 5 | Streamlit 聊天界面 | ✅ 启动健康检查 ok |
+| 6 | 多轮对话上下文 | ✅ session_state 实现 + 测试覆盖 |
+| 7 | 单元测试覆盖率 >70% | ✅ 82% |
+| 8 | GitHub Actions CI | ⏳ 已触发，待远程确认绿色 |
+| 9 | GitHub 代码推送 | ✅ 5 commits 已推送 |
+| 10 | MVP 演示录屏 | ⏳ 待录制（脚本见 docs/demo_script.md） |

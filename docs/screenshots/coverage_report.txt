@@ -1,0 +1,21 @@
+# 测试覆盖率报告（自动生成）
+
+生成时间: 2026-08-13
+命令: uv run pytest tests/ -m 'not slow' --cov=src --cov-report=term-missing
+
+```
+86 passed, 4 deselected(slow) — 覆盖率 82% (门禁 ≥70%)
+
+模块覆盖率明细:
+  agents/summarizer.py   96%
+  tools/pubmed_tool.py    96%
+  tools/arxiv_tool.py    100%
+  rag/vector_store.py     98%
+  rag/text_splitter.py    92%
+  rag/embeddings.py       88%
+  rag/document_loader.py  78%
+  rag/rag_pipeline.py     78%
+  ui/components.py        89%
+  ui/app.py               44% (主编排，靠 mock 测试)
+  TOTAL                   82%
+```
