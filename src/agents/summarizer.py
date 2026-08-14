@@ -1,11 +1,14 @@
 """
 Paper Summarizer — LLM 驱动的论文摘要生成器。
 
-使用 API2D (OpenAI 兼容) 的中转 API，调用 LLM 对生物医学论文
-生成结构化摘要。支持三种摘要类型：
-  - brief:       一句话概括 + 关键启示
-  - detailed:    背景 / 方法 / 结果 / 结论 四段式
-  - key_findings: 3-5 个关键发现要点
+使用 API2D (OpenAI 兼容) 的中转 API，调用 LLM 对生物医学论文生成结构化摘要。
+V1.0 支持 5 种摘要模式，覆盖「读单篇 / 读多篇 / 找空白」三大需求:
+  - brief:        一句话概括 + 关键启示
+  - standard:     背景 / 方法 / 结果 / 结论 四段式
+  - detailed:     四段式 + 数据 / 局限 / 意义（深度精读）
+  - comparison:   多篇横向对比表
+  - gap_analysis: 研究空白分析（从文献到选题）
+  - key_findings: 3-5 个关键发现要点（MVP 遗留，向后兼容）
 
 使用示例:
     summarizer = PaperSummarizer()
@@ -50,7 +53,7 @@ Respond in {language}. Return a JSON object with exactly these keys:
 
 Return ONLY valid JSON, no markdown fences or extra text."""
 
-DETAILED_PROMPT = """You are a senior biomedical researcher. Write a structured summary of the following paper.
+STANDARD_PROMPT = """You are a senior biomedical researcher. Write a structured summary of the following paper.
 
 Paper Title: {title}
 Abstract: {abstract}
@@ -61,6 +64,24 @@ Respond in {language}. Return a JSON object with exactly these keys:
   "methods": "Methods and technical approach used (2-3 sentences)",
   "results": "Key results and findings (2-3 sentences)",
   "conclusions": "Conclusions and future directions (1-2 sentences)"
+}}
+
+Return ONLY valid JSON, no markdown fences or extra text."""
+
+DETAILED_PROMPT = """You are a senior biomedical researcher. Write a deep, detailed summary of the following paper.
+
+Paper Title: {title}
+Abstract: {abstract}
+
+Respond in {language}. Return a JSON object with exactly these keys:
+{{
+  "background": "Research background and the problem addressed (2-3 sentences)",
+  "methods": "Methods and technical approach used (2-3 sentences)",
+  "results": "Key results and findings (2-3 sentences)",
+  "conclusions": "Conclusions and future directions (1-2 sentences)",
+  "data": "Key quantitative data points, effect sizes, or statistics mentioned",
+  "limitations": "Limitations acknowledged by the authors or evident from the design",
+  "significance": "Why this work matters for the broader field (1-2 sentences)"
 }}
 
 Return ONLY valid JSON, no markdown fences or extra text."""
@@ -78,6 +99,47 @@ Respond in {language}. Return a JSON object with exactly these keys:
 
 Provide 3-5 key findings. Return ONLY valid JSON, no markdown fences or extra text."""
 
+COMPARISON_PROMPT = """You are a senior biomedical researcher. Compare the following papers horizontally (横向对比).
+
+Do NOT write separate summaries for each paper. Instead compare them by dimension,
+explicitly pointing out similarities and differences.
+
+Papers:
+{papers}
+
+Respond in {language}. Return a JSON object with exactly these keys:
+{{
+  "comparison": [
+    {{"dimension": "research_design", "entries": {{"paper_1": "...", "paper_2": "...", ...}}}},
+    {{"dimension": "sample_size", "entries": {{...}}}},
+    {{"dimension": "key_conclusions", "entries": {{...}}}},
+    {{"dimension": "limitations", "entries": {{...}}}}
+  ],
+  "similarities": ["shared point 1", "shared point 2"],
+  "differences": ["difference 1", "difference 2"]
+}}
+
+Return ONLY valid JSON, no markdown fences or extra text."""
+
+GAP_ANALYSIS_PROMPT = """You are a senior biomedical researcher. Analyze the following papers as a group,
+and identify research gaps that NONE of them adequately cover.
+
+Papers:
+{papers}
+
+Respond in {language}. Return a JSON object with exactly these keys:
+{{
+  "gaps": [
+    {{
+      "gap": "Description of the research gap",
+      "rationale": "Why this is a genuine gap (what the listed papers missed)",
+      "suggested_direction": "A concrete, actionable research direction to fill it"
+    }}
+  ]
+}}
+
+Provide 3-5 insightful, non-generic gaps. Return ONLY valid JSON, no markdown fences or extra text."""
+
 
 # ── Summarizer 实现 ─────────────────────────────────────────────────────
 
@@ -85,8 +147,9 @@ Provide 3-5 key findings. Return ONLY valid JSON, no markdown fences or extra te
 class PaperSummarizer:
     """LLM 驱动的生物医学论文摘要生成器。
 
-    通过 API2D 中转调用 OpenAI 兼容的 LLM API，
-    对论文标题+摘要生成结构化摘要。
+    通过 API2D 中转调用 OpenAI 兼容的 LLM API，对论文标题+摘要生成
+    结构化摘要。支持单篇（brief/standard/detailed/key_findings）和
+    多篇（comparison/gap_analysis）两类模式。
 
     Attributes:
         llm:         LangChain ChatOpenAI 实例
@@ -127,13 +190,15 @@ class PaperSummarizer:
             model_name, base_url, temperature,
         )
 
-    # ── 公开接口 ──────────────────────────────────────────────────────────
+    # ── 公开接口：单篇摘要 ──────────────────────────────────────────────
 
     def summarize(
         self,
         title: str,
         abstract: str,
-        summary_type: Literal["brief", "detailed", "key_findings", "all"] = "all",
+        summary_type: Literal[
+            "brief", "standard", "detailed", "key_findings", "all"
+        ] = "all",
         language: str = "english",
     ) -> dict[str, Any]:
         """对单篇论文生成摘要。
@@ -141,16 +206,17 @@ class PaperSummarizer:
         Args:
             title:        论文标题
             abstract:     论文摘要文本
-            summary_type: 摘要类型
+            summary_type: 摘要类型（comparison/gap_analysis 需用多篇方法）
             language:     输出语言 (english / chinese)
 
         Returns:
             {
                 "paper_title": str,
                 "summary_type": str,
-                "brief": { "one_liner": str, "takeaway": str } | None,
-                "detailed": { ... } | None,
-                "key_findings": { ... } | None,
+                "brief": {...} | None,
+                "standard": {...} | None,
+                "detailed": {...} | None,
+                "key_findings": {...} | None,
                 "model": str,
                 "tokens_used": int,
             }
@@ -159,25 +225,33 @@ class PaperSummarizer:
             logger.warning("Abstract too short (%d chars), skipping", len(abstract))
             return self._empty_result(title, summary_type)
 
-        types_to_generate = (
-            ["brief", "detailed", "key_findings"] if summary_type == "all"
-            else [summary_type]
-        )
+        prompt_map = {
+            "brief": BRIEF_PROMPT,
+            "standard": STANDARD_PROMPT,
+            "detailed": DETAILED_PROMPT,
+            "key_findings": KEY_FINDINGS_PROMPT,
+        }
+
+        if summary_type == "all":
+            types_to_generate = ["brief", "detailed", "key_findings"]
+        elif summary_type in prompt_map:
+            types_to_generate = [summary_type]
+        else:
+            raise ValueError(
+                f"Unsupported summary_type '{summary_type}'. "
+                f"Use {sorted(prompt_map)} or 'all', or use compare()/gap_analysis() "
+                f"for multi-paper modes."
+            )
 
         result = {
             "paper_title": title,
             "summary_type": summary_type,
             "brief": None,
+            "standard": None,
             "detailed": None,
             "key_findings": None,
             "model": self.model_name,
             "tokens_used": 0,
-        }
-
-        prompt_map = {
-            "brief": BRIEF_PROMPT,
-            "detailed": DETAILED_PROMPT,
-            "key_findings": KEY_FINDINGS_PROMPT,
         }
 
         for st in types_to_generate:
@@ -198,7 +272,9 @@ class PaperSummarizer:
     def summarize_batch(
         self,
         papers: list[dict[str, str]],
-        summary_type: Literal["brief", "detailed", "key_findings", "all"] = "all",
+        summary_type: Literal[
+            "brief", "standard", "detailed", "key_findings", "all"
+        ] = "all",
         language: str = "english",
     ) -> list[dict[str, Any]]:
         """批量生成摘要。
@@ -238,7 +314,65 @@ class PaperSummarizer:
         logger.info("Batch complete: %d/%d successful", ok, len(results))
         return results
 
+    # ── 公开接口：多篇摘要 ──────────────────────────────────────────────
+
+    def compare(
+        self,
+        papers: list[dict[str, str]],
+        language: str = "english",
+    ) -> dict[str, Any]:
+        """多篇论文横向对比摘要。
+
+        Args:
+            papers:   论文列表（含 title / abstract）
+            language: 输出语言
+
+        Returns:
+            {"comparison": [...], "similarities": [...], "differences": [...]}
+        """
+        if len(papers) < 2:
+            raise ValueError("compare() requires at least 2 papers")
+        prompt = COMPARISON_PROMPT.format(
+            papers=self._format_papers(papers),
+            language=language,
+        )
+        logger.info("Comparison summary for %d papers", len(papers))
+        return self._call_llm(prompt)
+
+    def gap_analysis(
+        self,
+        papers: list[dict[str, str]],
+        language: str = "english",
+    ) -> dict[str, Any]:
+        """研究空白分析 — 从一组论文中识别未覆盖的研究方向。
+
+        Args:
+            papers:   论文列表（含 title / abstract）
+            language: 输出语言
+
+        Returns:
+            {"gaps": [{"gap", "rationale", "suggested_direction"}, ...]}
+        """
+        if not papers:
+            raise ValueError("gap_analysis() requires at least 1 paper")
+        prompt = GAP_ANALYSIS_PROMPT.format(
+            papers=self._format_papers(papers),
+            language=language,
+        )
+        logger.info("Gap analysis for %d papers", len(papers))
+        return self._call_llm(prompt)
+
     # ── 内部实现 ──────────────────────────────────────────────────────────
+
+    @staticmethod
+    def _format_papers(papers: list[dict[str, str]], max_abstract: int = 500) -> str:
+        """把论文列表格式化为编号文本块（供多篇模式的 prompt 使用）。"""
+        lines = []
+        for i, paper in enumerate(papers, 1):
+            title = paper.get("title") or f"Paper {i}"
+            abstract = (paper.get("abstract") or "")[:max_abstract]
+            lines.append(f"{i}. {title}\n   {abstract}")
+        return "\n\n".join(lines)
 
     @retry(
         stop=stop_after_attempt(3),
@@ -287,6 +421,7 @@ class PaperSummarizer:
             "paper_title": title,
             "summary_type": summary_type,
             "brief": None,
+            "standard": None,
             "detailed": None,
             "key_findings": None,
             "model": self.model_name,
@@ -302,7 +437,6 @@ if __name__ == "__main__":  # pragma: no cover
 
     summarizer = PaperSummarizer()
 
-    # 测试单篇摘要
     test_title = (
         "mRNA vaccine combined with immune checkpoint inhibitor "
         "shows promising results in advanced pancreatic cancer: "
@@ -318,17 +452,7 @@ if __name__ == "__main__":  # pragma: no cover
         "The combination therapy was well-tolerated with grade 3-4 "
         "adverse events in 41% of patients, primarily hematologic. "
         "At a median follow-up of 24 months, the 18-month RFS rate was "
-        "72% compared to 45% in historical controls. T cell receptor "
-        "repertoire analysis revealed significant clonal expansion of "
-        "vaccine-induced neoantigen-specific T cells, with sustained "
-        "persistence up to 18 months post-vaccination. Single-cell "
-        "RNA sequencing of peripheral blood mononuclear cells showed "
-        "enrichment of CD8+ effector memory T cells expressing high "
-        "levels of granzyme B and perforin. These results provide the "
-        "first evidence that individualized mRNA neoantigen vaccines "
-        "can induce durable T cell responses and delay recurrence in "
-        "PDAC patients, warranting further investigation in a "
-        "randomized phase III trial."
+        "72% compared to 45% in historical controls."
     )
 
     result = summarizer.summarize(
@@ -341,8 +465,7 @@ if __name__ == "__main__":  # pragma: no cover
     print(f"\n=== {result['paper_title'][:80]}... ===")
     if result.get("detailed"):
         d = result["detailed"]
-        print(f"\n📋 背景: {d.get('background', 'N/A')}")
-        print(f"\n🔬 方法: {d.get('methods', 'N/A')}")
-        print(f"\n📊 结果: {d.get('results', 'N/A')}")
-        print(f"\n💡 结论: {d.get('conclusions', 'N/A')}")
+        for key in ("background", "methods", "results", "conclusions", "significance"):
+            if key in d:
+                print(f"\n[{key}] {d[key]}")
     print(f"\n模型: {result['model']}")

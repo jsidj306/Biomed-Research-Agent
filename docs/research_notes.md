@@ -132,3 +132,64 @@ PubMed "CRISPR cancer" (3420篇)
 | 8 | GitHub Actions CI | ⏳ 已触发，待远程确认绿色 |
 | 9 | GitHub 代码推送 | ✅ 5 commits 已推送 |
 | 10 | MVP 演示录屏 | ⏳ 待录制（脚本见 docs/demo_script.md） |
+
+---
+
+## 2026-08-14
+
+### 第3-4周 V1.0 开发复盘
+
+#### 完成情况
+
+- 实际工时：约 60 小时（Day 15–28，与计划吻合）
+- 完成率：**任务 1–8 全部完成，任务 9 演示进行中**
+- 核心闭环：**Supervisor 派单 → 5 源并发搜索 → Review 评分/去重/矛盾检测 → 5 种摘要模式**
+- 测试：**166 passed + 4 deselected(slow)，覆盖率 85%**（MVP 82% → 85%，门禁 ≥70%）
+
+#### 架构决策对不对（复盘三问之一）
+
+1. **LangGraph StateGraph 选型正确**。用「图」而非「链」描述 Agent 协作，条件边（`add_conditional_edges`）让流程从「固定流水线」升级成「自适应编排」。MVP 的 `search_papers()` 串行循环，V1.0 变成 `asyncio.gather` 并发，5 源总耗时 ≈ 最慢单源。
+2. **统一返回协议是最值的决策**。MVP 定的 `{papers, total_count, query, source}` 在数据源从 2 扩到 5 时，下游 Review/Summarize 一行没改——前期半小时定协议，后期省一天。
+3. **Supervisor「规划-执行分离」合理**。Supervisor 不碰检索，只判断意图、拆计划（temperature=0.2 保稳定），职责单一，测试好写。
+
+#### 评测指标达没达（复盘三问之二）
+
+- **测试/覆盖率达标**：166 tests、85%，超门禁。
+- **混合检索指标（MRR/Recall@10）——评测基础设施已建，实测定级未跑**。`src/rag/hybrid_search.py` 的 `mean_reciprocal_rank` / `recall_at_k` 函数 + RRF 融合 + BM25 + BGE-Reranker 封装全部写完并有单测，但「30–50 个真实查询 + 人工标注」的评测集尚未构建，所以 `MRR>0.70 & Recall@10>0.85` 这条硬验收线**尚未实测定级**。这是下一阶段第一优先级。
+- **LangFuse 调用链**：追踪器（`LangfuseTracer`）+ 单测完成，降级策略验证通过；但需真实注册 LangFuse 账号并配 `.env` 后，Dashboard 才能看到完整链路（当前缺 Key 时静默降级为 no-op）。
+
+#### 下一阶段改什么（复盘三问之三）
+
+1. **补评测集**：用之前真实搜索过的 query 建 30–50 条带标注的评测集，把 MRR/Recall 跑出真实数字。
+2. **接真 LangFuse**：注册账号配 Key，把 graph.py 各节点埋点，Dashboard 出火焰图。
+3. **博客发布 + 录屏**：`docs/blog_1_minimind_to_langgraph.md` 已写好，需发到掘金/知乎/GitHub README；`docs/v1_demo_script.md` 已写好，需录屏。
+4. **第5-6周增强**：Critic Agent（self-refine 闭环）、知识图谱（实体抽取+关系推理）、报告生成。
+
+#### 新增文件清单
+
+| 文件 | 作用 |
+|------|------|
+| `src/agents/graph.py` | LangGraph StateGraph 编排（AgentState + 4 节点 + 条件边） |
+| `src/agents/supervisor.py` | Supervisor 意图解析 + 计划生成 |
+| `src/agents/search_agent.py` | 5 源 asyncio 并发 + 去重 |
+| `src/agents/review_agent.py` | 评分 + 三级去重 + 矛盾检测 + Top-K |
+| `src/agents/summarizer.py` | 5 种摘要模式（Brief/Standard/Detailed/Comparison/Gap） |
+| `src/tools/semantic_scholar_tool.py` | Semantic Scholar 接入 |
+| `src/tools/biorxiv_tool.py` | bioRxiv + medRxiv 接入（Europe PMC SRC:PPR） |
+| `src/rag/hybrid_search.py` | BM25 + RRF + Reranker + MRR/Recall 评测 |
+| `src/observability/tracing.py` | LangFuse 调用链追踪（降级安全） |
+| `src/utils/llm_utils.py` | JSON 三级容错 + ChatModel 工厂 |
+| `docs/blog_1_minimind_to_langgraph.md` | 第 1 篇技术博客 |
+| `docs/v1_demo_script.md` | V1.0 演示脚本 |
+
+#### V1.0 验收（5 项确认）
+
+| # | 验收项 | 状态 |
+|---|--------|------|
+| 1 | LangGraph 多Agent流程图可运行，状态转换正确 | ✅ 166 tests 含 graph 单测 |
+| 2 | 5 个数据源全部接入 | ✅ PubMed/Arxiv/S2S/bioRxiv/medRxiv |
+| 3 | 混合检索 MRR>0.70 & Recall@10>0.85 | ⏳ 基础设施完成，评测集未建、数字未测 |
+| 4 | LangFuse 可追踪完整调用链 | ⏳ 代码完成，待注册账号配 Key |
+| 5 | 第 1 篇技术博客发布 | ⏳ 已撰写，待发布到平台 |
+
+> 结论：V1.0 的「代码 + 测试」主干 100% 完成并验证通过；「外部依赖 + 实测定级」三类（评测集、LangFuse 账号、博客发布/录屏）需真实环境收尾，已列入第5-6周第一优先级。

@@ -30,3 +30,6 @@ reference-project/
 
 # Temporary work notes (LLM decision drafts)
 temp_*.json
+
+# Logs
+*.log
