@@ -43,5 +43,9 @@ User → Streamlit UI → FastAPI → LangGraph Agent
 | Data Sources | PubMed, arXiv, Semantic Scholar, bioRxiv |
 | Infrastructure | Docker, docker-compose |
 
+## 技术博客 / Blog
+
+- [从 MiniMind 到 LangGraph——构建生物医学研究 Agent](https://juejin.cn/spost/7673780779483676678)（掘金）
+
 ## License
 MIT
