@@ -85,6 +85,7 @@ def build_graph(
     search_agent=None,
     review_agent=None,
     summarizer=None,
+    tracer=None,
 ) -> Any:
     """构建并编译 LangGraph 多Agent编排图。
 
@@ -93,12 +94,15 @@ def build_graph(
         search_agent: SearchAgent 实例
         review_agent: ReviewAgent 实例
         summarizer:   PaperSummarizer 实例
+        tracer:       LangfuseTracer 实例（缺省时惰性实例化，无 Key 静默降级）
 
     Returns:
         CompiledStateGraph — 编译后的图，可 .invoke() / .get_graph()
 
     Notes:
         测试时传入 mock 对象即可，避免真实 LLM / API 调用。
+        每个节点用 tracer.trace 包裹，未配置 LangFuse Key 时自动降级为
+        no-op，不影响主流程。
     """
     # 惰性实例化默认 Agent（测试时传入 mock，避免真实调用）
     if supervisor is None:
@@ -117,6 +121,10 @@ def build_graph(
         from src.agents.summarizer import PaperSummarizer
 
         summarizer = PaperSummarizer()
+    if tracer is None:
+        from src.observability.tracing import LangfuseTracer
+
+        tracer = LangfuseTracer()
 
     # ── 节点定义（纯函数式：输入 State，返回部分 State 更新）────────────
 
@@ -124,14 +132,18 @@ def build_graph(
         """Supervisor：意图解析 + 研究步骤计划生成。"""
         query = state["query"]
         logger.info("[supervisor] generating plan for: %s", query[:60])
-        plan = supervisor.generate_plan(query)
+        with tracer.trace("supervisor", {"query": query}) as span:
+            plan = supervisor.generate_plan(query)
+            span.set_output({"n_steps": len(plan)})
         return {"plan": plan}
 
     def search_node(state: AgentState) -> dict:
         """Search：多源并发检索。"""
         query = state["query"]
         logger.info("[search] searching multi-source: %s", query[:60])
-        papers = search_agent.search_all(query)
+        with tracer.trace("search", {"query": query}) as span:
+            papers = search_agent.search_all(query)
+            span.set_output({"n_papers": len(papers)})
         return {"papers": papers}
 
     def review_node(state: AgentState) -> dict:
@@ -139,24 +151,28 @@ def build_graph(
         papers = state.get("papers", [])
         query = state["query"]
         logger.info("[review] reviewing %d papers", len(papers))
-        reviews = review_agent.review(papers, query)
+        with tracer.trace("review", {"query": query, "n_papers": len(papers)}) as span:
+            reviews = review_agent.review(papers, query)
+            span.set_output({"n_reviews": len(reviews)})
         return {"reviews": reviews}
 
     def summarize_node(state: AgentState) -> dict:
         """Summarize：对 Top 论文生成摘要并汇总最终报告。"""
         papers = state.get("papers", [])
         logger.info("[summarize] summarizing %d papers", len(papers))
-        summaries = summarizer.summarize_batch(
-            [
-                {
-                    "title": p.get("title", ""),
-                    "abstract": p.get("abstract", ""),
-                }
-                for p in papers[:5]
-            ],
-            summary_type="brief",
-        )
-        final_report = _compose_report(state, summaries)
+        with tracer.trace("summarize", {"n_papers": len(papers)}) as span:
+            summaries = summarizer.summarize_batch(
+                [
+                    {
+                        "title": p.get("title", ""),
+                        "abstract": p.get("abstract", ""),
+                    }
+                    for p in papers[:5]
+                ],
+                summary_type="brief",
+            )
+            final_report = _compose_report(state, summaries)
+            span.set_output({"n_summaries": len(summaries)})
         return {"summaries": summaries, "final_report": final_report}
 
     # ── 编排 ────────────────────────────────────────────────────────────

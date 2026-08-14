@@ -1,0 +1,558 @@
+{
+  "description": "生物医学检索评测集 — 60 篇语料 / 40 条带标注查询",
+  "corpus": [
+    {
+      "id": 0,
+      "title": "Chimeric antigen receptor T cells targeting CD19 in refractory B-cell acute lymphoblastic leukemia",
+      "abstract": "Autologous T cells engineered to express a CD19-specific chimeric antigen receptor induced durable remission in patients with refractory B-cell acute lymphoblastic leukemia."
+    },
+    {
+      "id": 1,
+      "title": "Anti-CD19 CAR T-cell therapy for diffuse large B-cell lymphoma",
+      "abstract": "CD19-directed CAR T cells produced high response rates in relapsed diffuse large B-cell lymphoma, though cytokine release syndrome remains a common toxicity."
+    },
+    {
+      "id": 2,
+      "title": "Cytokine release syndrome following CAR T-cell infusion",
+      "abstract": "Cytokine release syndrome is a frequent and potentially life-threatening complication of CAR T-cell therapy, driven by massive T-cell activation and release of inflammatory cytokines."
+    },
+    {
+      "id": 3,
+      "title": "Overcoming barriers to CAR T-cell therapy in solid tumors",
+      "abstract": "Unlike hematologic malignancies, solid tumors resist CAR T-cell therapy because of antigen heterogeneity, an immunosuppressive microenvironment, and poor T-cell trafficking."
+    },
+    {
+      "id": 4,
+      "title": "CD19 antigen loss as a mechanism of CAR T-cell resistance",
+      "abstract": "Relapse after anti-CD19 CAR T-cell therapy is frequently associated with loss of CD19 expression on malignant B cells, an immune escape mechanism."
+    },
+    {
+      "id": 5,
+      "title": "Engineering next-generation CARs with dual costimulation",
+      "abstract": "Second and third generation CAR constructs incorporate costimulatory domains such as CD28 and 4-1BB to enhance T-cell persistence and effector function."
+    },
+    {
+      "id": 6,
+      "title": "Lipid nanoparticle delivery of mRNA vaccines against SARS-CoV-2",
+      "abstract": "mRNA vaccines encapsulate the spike protein coding sequence inside lipid nanoparticles, which protect the RNA and enable intracellular delivery to antigen-presenting cells."
+    },
+    {
+      "id": 7,
+      "title": "Efficacy of the mRNA-1273 vaccine against symptomatic COVID-19",
+      "abstract": "The mRNA-1273 vaccine demonstrated roughly 94 percent efficacy against symptomatic COVID-19 in a large randomized placebo-controlled trial."
+    },
+    {
+      "id": 8,
+      "title": "mRNA vaccine platform from cancer immunotherapy to infectious disease",
+      "abstract": "The same mRNA platform originally developed for cancer immunotherapy was rapidly repurposed to encode viral antigens, enabling fast vaccine design."
+    },
+    {
+      "id": 9,
+      "title": "Rare adverse events after mRNA COVID-19 vaccination",
+      "abstract": "mRNA COVID-19 vaccines are associated with rare adverse events including myocarditis in younger males, which must be weighed against the risks of infection."
+    },
+    {
+      "id": 10,
+      "title": "Booster doses and waning immunity after mRNA vaccination",
+      "abstract": "Neutralizing antibody titers decline over months after primary mRNA vaccination, and booster doses restore protection against severe disease."
+    },
+    {
+      "id": 11,
+      "title": "Stability and cold-chain requirements of mRNA vaccines",
+      "abstract": "mRNA vaccines are inherently unstable and require ultra-cold storage, prompting research into lyophilized and thermostable formulations."
+    },
+    {
+      "id": 12,
+      "title": "CRISPR-Cas9 genome editing in mammalian cells",
+      "abstract": "The CRISPR-Cas9 system uses a guide RNA to direct the Cas9 nuclease to a complementary DNA sequence, producing a targeted double-strand break that enables gene editing."
+    },
+    {
+      "id": 13,
+      "title": "Off-target effects of CRISPR-Cas9",
+      "abstract": "Cas9 can cleave sequences that partially match the guide RNA, causing unintended off-target mutations that must be detected and minimized for safe editing."
+    },
+    {
+      "id": 14,
+      "title": "Delivery of CRISPR components using adeno-associated virus",
+      "abstract": "Adeno-associated virus vectors can deliver Cas9 and guide RNA to target tissues in vivo, though packaging limits and immunogenicity remain challenges."
+    },
+    {
+      "id": 15,
+      "title": "CRISPR base editing for single-nucleotide correction",
+      "abstract": "Base editors fuse a catalytically impaired Cas9 to a deaminase enzyme to convert one DNA base into another without creating a double-strand break."
+    },
+    {
+      "id": 16,
+      "title": "Ethical considerations in human germline editing",
+      "abstract": "Editing human embryos raises profound ethical questions about heritable genetic modification, consent, and equity, prompting calls for international governance."
+    },
+    {
+      "id": 17,
+      "title": "CRISPR screens for functional genomics",
+      "abstract": "Pooled CRISPR knockout and activation screens systematically perturb thousands of genes in parallel to reveal their roles in biological processes."
+    },
+    {
+      "id": 18,
+      "title": "Amyloid-beta plaques in Alzheimer's disease pathology",
+      "abstract": "Extracellular accumulation of amyloid-beta peptides into plaques is a defining pathological hallmark of Alzheimer's disease and a focus of diagnostic and therapeutic targeting."
+    },
+    {
+      "id": 19,
+      "title": "Tau protein hyperphosphorylation and neurofibrillary tangles",
+      "abstract": "Hyperphosphorylated tau protein aggregates into intracellular neurofibrillary tangles, which correlate more closely with cognitive decline than amyloid plaques."
+    },
+    {
+      "id": 20,
+      "title": "Anti-amyloid monoclonal antibodies for Alzheimer's therapy",
+      "abstract": "Monoclonal antibodies that clear amyloid-beta plaques have shown modest slowing of cognitive decline in early Alzheimer's disease trials."
+    },
+    {
+      "id": 21,
+      "title": "APOE4 as a genetic risk factor for Alzheimer's disease",
+      "abstract": "The apolipoprotein E epsilon4 allele is the strongest common genetic risk factor for late-onset Alzheimer's disease, influencing amyloid clearance and neuroinflammation."
+    },
+    {
+      "id": 22,
+      "title": "Biomarkers for early diagnosis of Alzheimer's disease",
+      "abstract": "Cerebrospinal fluid and blood biomarkers such as phosphorylated tau and amyloid ratio enable detection of Alzheimer's pathology years before clinical symptoms."
+    },
+    {
+      "id": 23,
+      "title": "Neuroinflammation in Alzheimer's disease progression",
+      "abstract": "Chronic activation of microglia and astrocytes contributes to synapse loss and neurodegeneration, positioning neuroinflammation as a therapeutic target."
+    },
+    {
+      "id": 24,
+      "title": "GLP-1 receptor agonists for glycemic control in type 2 diabetes",
+      "abstract": "Glucagon-like peptide-1 receptor agonists enhance glucose-dependent insulin secretion and suppress glucagon, improving glycemic control in type 2 diabetes."
+    },
+    {
+      "id": 25,
+      "title": "Insulin resistance and beta-cell dysfunction in type 2 diabetes",
+      "abstract": "Type 2 diabetes arises from peripheral insulin resistance combined with progressive pancreatic beta-cell dysfunction and relative insulin deficiency."
+    },
+    {
+      "id": 26,
+      "title": "Cardiovascular benefits of GLP-1 receptor agonists",
+      "abstract": "Several GLP-1 receptor agonists have demonstrated reductions in major adverse cardiovascular events in patients with type 2 diabetes at high cardiovascular risk."
+    },
+    {
+      "id": 27,
+      "title": "SGLT2 inhibitors and renal outcomes in diabetes",
+      "abstract": "Sodium-glucose cotransporter-2 inhibitors lower glucose and reduce the progression of diabetic kidney disease through hemodynamic and metabolic effects."
+    },
+    {
+      "id": 28,
+      "title": "Metformin mechanism of action in type 2 diabetes",
+      "abstract": "Metformin reduces hepatic glucose production and improves insulin sensitivity, remaining first-line therapy for type 2 diabetes."
+    },
+    {
+      "id": 29,
+      "title": "Weight loss effects of semaglutide",
+      "abstract": "Semaglutide, a long-acting GLP-1 receptor agonist, produces substantial and sustained weight loss in patients with obesity and overweight."
+    },
+    {
+      "id": 30,
+      "title": "Mechanisms of beta-lactam resistance in MRSA",
+      "abstract": "Methicillin-resistant Staphylococcus aureus resists beta-lactam antibiotics through acquisition of the mecA gene encoding an altered penicillin-binding protein."
+    },
+    {
+      "id": 31,
+      "title": "Emergence of carbapenem-resistant Enterobacteriaceae",
+      "abstract": "Carbapenem-resistant Enterobacteriaceae produce carbapenemase enzymes that hydrolyze last-resort antibiotics, posing a severe public health threat."
+    },
+    {
+      "id": 32,
+      "title": "Efflux pumps and multidrug resistance",
+      "abstract": "Bacterial efflux pumps actively expel multiple classes of antibiotics from the cell, contributing to multidrug resistance in many pathogens."
+    },
+    {
+      "id": 33,
+      "title": "Antibiotic stewardship programs to curb resistance",
+      "abstract": "Antimicrobial stewardship programs optimize antibiotic prescribing to slow the emergence of resistance and improve patient outcomes."
+    },
+    {
+      "id": 34,
+      "title": "Horizontal gene transfer of antibiotic resistance genes",
+      "abstract": "Resistance genes spread between bacteria through plasmids and transposons, accelerating the global dissemination of antibiotic resistance."
+    },
+    {
+      "id": 35,
+      "title": "Phage therapy as an alternative to antibiotics",
+      "abstract": "Bacteriophages specifically infect and kill bacteria, offering a potential alternative for treating multidrug-resistant infections."
+    },
+    {
+      "id": 36,
+      "title": "PD-1 blockade in metastatic melanoma",
+      "abstract": "Antibodies blocking the programmed cell death protein 1 receptor produce durable responses and improved survival in metastatic melanoma."
+    },
+    {
+      "id": 37,
+      "title": "CTLA-4 inhibition and immune checkpoint blockade",
+      "abstract": "Targeting cytotoxic T-lymphocyte antigen 4 releases a brake on T-cell activation, forming the basis of early checkpoint inhibitor therapy."
+    },
+    {
+      "id": 38,
+      "title": "Immune-related adverse events of checkpoint inhibitors",
+      "abstract": "Checkpoint inhibitors can trigger immune-related adverse events such as colitis, pneumonitis, and endocrinopathies due to loss of peripheral tolerance."
+    },
+    {
+      "id": 39,
+      "title": "Biomarkers predicting response to PD-1 therapy",
+      "abstract": "PD-L1 expression, tumor mutational burden, and immune infiltration are candidate biomarkers for selecting patients likely to respond to checkpoint blockade."
+    },
+    {
+      "id": 40,
+      "title": "Combination of checkpoint inhibitors with chemotherapy",
+      "abstract": "Combining checkpoint blockade with chemotherapy can improve response rates by enhancing tumor antigen release and immune activation."
+    },
+    {
+      "id": 41,
+      "title": "Tumor mutational burden and immunotherapy response",
+      "abstract": "High tumor mutational burden correlates with increased neoantigen load and improved response to checkpoint inhibitors across several cancers."
+    },
+    {
+      "id": 42,
+      "title": "Alpha-synuclein aggregation in Parkinson's disease",
+      "abstract": "Misfolded alpha-synuclein aggregates into Lewy bodies in dopaminergic neurons, a central pathological feature of Parkinson's disease."
+    },
+    {
+      "id": 43,
+      "title": "Deep brain stimulation for advanced Parkinson's disease",
+      "abstract": "High-frequency electrical stimulation of the subthalamic nucleus improves motor symptoms in patients with advanced Parkinson's disease."
+    },
+    {
+      "id": 44,
+      "title": "Dopaminergic neuron loss in the substantia nigra",
+      "abstract": "Progressive degeneration of dopamine-producing neurons in the substantia nigra pars compacta underlies the motor symptoms of Parkinson's disease."
+    },
+    {
+      "id": 45,
+      "title": "LRRK2 mutations and familial Parkinson's disease",
+      "abstract": "Mutations in the leucine-rich repeat kinase 2 gene are the most common genetic cause of familial and sporadic Parkinson's disease."
+    },
+    {
+      "id": 46,
+      "title": "Gut-brain axis in Parkinson's disease",
+      "abstract": "Emerging evidence links gut microbiota and intestinal inflammation to the initiation of alpha-synuclein pathology and Parkinson's disease progression."
+    },
+    {
+      "id": 47,
+      "title": "Neuroprotective strategies in Parkinson's disease",
+      "abstract": "Neuroprotective approaches aim to slow dopaminergic degeneration through antioxidants, anti-inflammatory agents, and targeted molecular therapies."
+    },
+    {
+      "id": 48,
+      "title": "Statins reduce LDL cholesterol and cardiovascular events",
+      "abstract": "Statin therapy lowers low-density lipoprotein cholesterol and reduces the incidence of myocardial infarction and stroke in at-risk patients."
+    },
+    {
+      "id": 49,
+      "title": "PCSK9 inhibitors for familial hypercholesterolemia",
+      "abstract": "Monoclonal antibodies against PCSK9 dramatically lower LDL cholesterol in patients with familial hypercholesterolemia who are intolerant of statins."
+    },
+    {
+      "id": 50,
+      "title": "Atherosclerosis and the role of inflammation",
+      "abstract": "Atherosclerosis is a chronic inflammatory disease of the arterial wall in which lipid deposition and immune cell infiltration drive plaque formation."
+    },
+    {
+      "id": 51,
+      "title": "Blood pressure control and stroke prevention",
+      "abstract": "Lowering elevated blood pressure is the single most effective intervention for preventing stroke and other cardiovascular events."
+    },
+    {
+      "id": 52,
+      "title": "Triglycerides and residual cardiovascular risk",
+      "abstract": "Elevated triglycerides contribute to residual cardiovascular risk even after LDL cholesterol is controlled with statin therapy."
+    },
+    {
+      "id": 53,
+      "title": "Aspirin in primary prevention of cardiovascular disease",
+      "abstract": "Low-dose aspirin modestly reduces cardiovascular events in primary prevention but increases bleeding risk, limiting its net benefit."
+    },
+    {
+      "id": 54,
+      "title": "Adeno-associated virus vectors for retinal gene therapy",
+      "abstract": "AAV vectors delivered by subretinal injection restore vision in inherited retinal dystrophies such as RPE65-associated Leber congenital amaurosis."
+    },
+    {
+      "id": 55,
+      "title": "AAV-mediated gene therapy for spinal muscular atrophy",
+      "abstract": "Intravenous AAV9 delivering the SMN1 gene improves motor function and survival in infants with spinal muscular atrophy."
+    },
+    {
+      "id": 56,
+      "title": "Immune responses to AAV capsid",
+      "abstract": "Pre-existing neutralizing antibodies against the AAV capsid and capsid-specific T-cell responses can limit transgene expression and durability."
+    },
+    {
+      "id": 57,
+      "title": "Hemophilia B gene therapy with factor IX",
+      "abstract": "AAV-based gene therapy delivering factor IX achieves sustained factor expression and reduces bleeding in hemophilia B patients."
+    },
+    {
+      "id": 58,
+      "title": "In vivo genome editing with AAV-delivered CRISPR",
+      "abstract": "AAV vectors can co-deliver Cas9 and guide RNA to perform in vivo genome editing in the liver and other organs."
+    },
+    {
+      "id": 59,
+      "title": "Manufacturing challenges for AAV gene therapy vectors",
+      "abstract": "Producing high-titer, high-purity AAV vectors at scale remains a major cost and quality bottleneck for gene therapy."
+    }
+  ],
+  "queries": [
+    {
+      "query": "How effective are CAR-T cells against CD19-positive blood cancers?",
+      "relevant_ids": [
+        0,
+        1
+      ]
+    },
+    {
+      "query": "What serious side effects can CAR T-cell therapy cause?",
+      "relevant_ids": [
+        2
+      ]
+    },
+    {
+      "query": "Why does CAR-T therapy struggle to treat solid tumors?",
+      "relevant_ids": [
+        3
+      ]
+    },
+    {
+      "query": "How do leukemia cells escape CAR-T targeting?",
+      "relevant_ids": [
+        4
+      ]
+    },
+    {
+      "query": "How are mRNA vaccines delivered into cells?",
+      "relevant_ids": [
+        6
+      ]
+    },
+    {
+      "query": "How well does the mRNA-1273 vaccine prevent COVID-19?",
+      "relevant_ids": [
+        7
+      ]
+    },
+    {
+      "query": "What side effects do mRNA COVID vaccines cause?",
+      "relevant_ids": [
+        9
+      ]
+    },
+    {
+      "query": "Do mRNA vaccine antibodies wane over time?",
+      "relevant_ids": [
+        10
+      ]
+    },
+    {
+      "query": "How does CRISPR-Cas9 edit the genome?",
+      "relevant_ids": [
+        12
+      ]
+    },
+    {
+      "query": "What are the risks of off-target CRISPR edits?",
+      "relevant_ids": [
+        13
+      ]
+    },
+    {
+      "query": "How can CRISPR components be delivered in vivo?",
+      "relevant_ids": [
+        14
+      ]
+    },
+    {
+      "query": "What is base editing used for?",
+      "relevant_ids": [
+        15
+      ]
+    },
+    {
+      "query": "What role do amyloid plaques play in Alzheimer's disease?",
+      "relevant_ids": [
+        18
+      ]
+    },
+    {
+      "query": "Which antibodies target amyloid in Alzheimer's therapy?",
+      "relevant_ids": [
+        20
+      ]
+    },
+    {
+      "query": "What genetic factor raises Alzheimer's risk?",
+      "relevant_ids": [
+        21
+      ]
+    },
+    {
+      "query": "What biomarkers help diagnose Alzheimer's early?",
+      "relevant_ids": [
+        22
+      ]
+    },
+    {
+      "query": "How do GLP-1 receptor agonists control blood sugar?",
+      "relevant_ids": [
+        24
+      ]
+    },
+    {
+      "query": "What causes type 2 diabetes at the cellular level?",
+      "relevant_ids": [
+        25
+      ]
+    },
+    {
+      "query": "Do GLP-1 drugs protect the heart?",
+      "relevant_ids": [
+        26
+      ]
+    },
+    {
+      "query": "How much weight can semaglutide help patients lose?",
+      "relevant_ids": [
+        29
+      ]
+    },
+    {
+      "query": "How does MRSA resist beta-lactam antibiotics?",
+      "relevant_ids": [
+        30
+      ]
+    },
+    {
+      "query": "What are carbapenem-resistant Enterobacteriaceae?",
+      "relevant_ids": [
+        31
+      ]
+    },
+    {
+      "query": "How do bacteria acquire antibiotic resistance genes?",
+      "relevant_ids": [
+        34
+      ]
+    },
+    {
+      "query": "Can bacteriophages treat resistant infections?",
+      "relevant_ids": [
+        35
+      ]
+    },
+    {
+      "query": "Is PD-1 blockade effective in metastatic melanoma?",
+      "relevant_ids": [
+        36
+      ]
+    },
+    {
+      "query": "What side effects do checkpoint inhibitors cause?",
+      "relevant_ids": [
+        38
+      ]
+    },
+    {
+      "query": "Which biomarkers predict immunotherapy response?",
+      "relevant_ids": [
+        39,
+        41
+      ]
+    },
+    {
+      "query": "Why combine checkpoint inhibitors with chemotherapy?",
+      "relevant_ids": [
+        40
+      ]
+    },
+    {
+      "query": "What protein misfolds in Parkinson's disease?",
+      "relevant_ids": [
+        42
+      ]
+    },
+    {
+      "query": "How is deep brain stimulation used in Parkinson's?",
+      "relevant_ids": [
+        43
+      ]
+    },
+    {
+      "query": "Which neurons degenerate in Parkinson's disease?",
+      "relevant_ids": [
+        44
+      ]
+    },
+    {
+      "query": "What genetic mutation causes familial Parkinson's?",
+      "relevant_ids": [
+        45
+      ]
+    },
+    {
+      "query": "Do statins lower the risk of heart attacks?",
+      "relevant_ids": [
+        48
+      ]
+    },
+    {
+      "query": "What do PCSK9 inhibitors treat?",
+      "relevant_ids": [
+        49
+      ]
+    },
+    {
+      "query": "How does inflammation drive atherosclerosis?",
+      "relevant_ids": [
+        50
+      ]
+    },
+    {
+      "query": "Does aspirin prevent heart disease in healthy people?",
+      "relevant_ids": [
+        53
+      ]
+    },
+    {
+      "query": "What retinal diseases can AAV gene therapy treat?",
+      "relevant_ids": [
+        54
+      ]
+    },
+    {
+      "query": "How does gene therapy treat spinal muscular atrophy?",
+      "relevant_ids": [
+        55
+      ]
+    },
+    {
+      "query": "What limits AAV gene therapy in hemophilia?",
+      "relevant_ids": [
+        57
+      ]
+    },
+    {
+      "query": "Can AAV deliver CRISPR for in vivo editing?",
+      "relevant_ids": [
+        58
+      ]
+    }
+  ],
+  "metrics": {
+    "mrr": 0.8895833333333332,
+    "recall_at_10": 1.0,
+    "bm25_mrr": 0.8833333333333332,
+    "bm25_recall_at_10": 1.0,
+    "semantic_mrr": 0.8883333333333333,
+    "semantic_recall_at_10": 1.0
+  },
+  "note": "语义路为 TF-IDF 余弦（保守下界），生产环境 PubMedBERT 嵌入只高不低。"
+}

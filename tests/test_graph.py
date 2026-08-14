@@ -222,3 +222,27 @@ class TestComposeReport:
         assert "step1" in report
         assert "检索到论文数: 2" in report
         assert "生成摘要数: 1" in report
+
+
+# ── LangFuse 埋点集成测试 ────────────────────────────────────────────────
+
+
+class TestTracingIntegration:
+    """测试各节点在 invoke 时产生 LangFuse 调用链埋点。"""
+
+    def test_nodes_record_traces(self, all_mocks):
+        """注入 mock 客户端，四个节点应各产生一次 span 埋点。"""
+        from src.observability.tracing import LangfuseTracer
+
+        mock_client = MagicMock()
+        mock_client.start_observation.return_value = MagicMock()
+        tracer = LangfuseTracer(client=mock_client)
+
+        app = build_graph(tracer=tracer, **all_mocks)
+        app.invoke({"query": "CAR-T therapy for solid tumors"})
+
+        names = [c.kwargs["name"] for c in mock_client.start_observation.call_args_list]
+        assert "supervisor" in names
+        assert "search" in names
+        assert "review" in names
+        assert "summarize" in names

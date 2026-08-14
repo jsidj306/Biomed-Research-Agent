@@ -24,6 +24,9 @@ LLM 调用 / Agent 节点的输入、输出、耗时、token 和成本，还能�
     tracer.record("review", input_data={"n": 10}, output_data={"top_k": 5},
                   duration_ms=123.4)
 
+    # 短脚本退出前主动 flush，确保 span 发送到 LangFuse
+    tracer.flush()
+
 环境变量（.env）:
     LANGFUSE_PUBLIC_KEY / LANGFUSE_SECRET_KEY / LANGFUSE_HOST
 """
@@ -32,7 +35,6 @@ from __future__ import annotations
 
 import logging
 import os
-import time
 from typing import Any
 
 from dotenv import load_dotenv
@@ -44,6 +46,9 @@ logger = logging.getLogger(__name__)
 
 class LangfuseTracer:
     """LangFuse 调用链追踪器（缺省配置时静默降级为 no-op）。
+
+    基于 LangFuse Python SDK v3+（OpenTelemetry 后端），通过
+    ``start_observation`` 创建节点级 span，``update``/``end`` 落盘。
 
     Attributes:
         enabled: 是否真正可用（配置了 Key 且客户端初始化成功）
@@ -88,7 +93,7 @@ class LangfuseTracer:
             input_data: 节点输入（可选）
 
         Returns:
-            _TraceSpan — 上下文管理器，进入记录开始时间，退出记录耗时+输出
+            _TraceSpan — 上下文管理器，进入建 span，退出 update+end
 
         Usage::
 
@@ -105,26 +110,38 @@ class LangfuseTracer:
         output_data: dict | None = None,
         duration_ms: float | None = None,
     ) -> None:
-        """显式记录一次节点调用。
+        """显式记录一次节点调用（一次性 span，立即 end）。
 
         Args:
             name:        节点名
             input_data:  输入数据
             output_data: 输出数据
-            duration_ms: 耗时（毫秒）
+            duration_ms: 耗时（毫秒，可选，写入 metadata）
         """
         if not self.enabled:
             return
         try:
-            trace = self._client.trace(
+            metadata = None
+            if duration_ms is not None:
+                metadata = {"duration_ms": round(duration_ms, 2)}
+            obs = self._client.start_observation(
                 name=name,
                 input=input_data,
                 output=output_data,
+                metadata=metadata,
             )
-            if duration_ms is not None:
-                trace.update(metadata={"duration_ms": round(duration_ms, 2)})
+            obs.end()
         except Exception as e:  # noqa: BLE001 — 监控降级，绝不影响主流程
             logger.warning("LangFuse record failed (degraded): %s", e)
+
+    def flush(self) -> None:
+        """主动把缓冲区里的 span 发送到 LangFuse（短脚本退出前调用）。"""
+        if not self.enabled:
+            return
+        try:
+            self._client.flush()
+        except Exception as e:  # noqa: BLE001
+            logger.warning("LangFuse flush failed (degraded): %s", e)
 
     # ── 内部实现 ────────────────────────────────────────────────────────
 
@@ -147,19 +164,29 @@ class _TraceSpan:
         self._tracer = tracer
         self._name = name
         self._input = input_data
-        self._start: float | None = None
         self._output: dict | None = None
+        self._obs = None
 
     def __enter__(self) -> "_TraceSpan":
-        self._start = time.perf_counter()
+        if self._tracer.enabled:
+            try:
+                self._obs = self._tracer._client.start_observation(
+                    name=self._name, input=self._input
+                )
+            except Exception as e:  # noqa: BLE001
+                logger.warning("LangFuse start failed (degraded): %s", e)
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb) -> bool:
-        duration_ms = (time.perf_counter() - self._start) * 1000 if self._start else 0.0
-        output = self._output
-        if exc_type is not None:
-            output = {"error": f"{exc_type.__name__}: {exc_val}"}
-        self._tracer.record(self._name, self._input, output, duration_ms)
+        if self._obs is not None:
+            try:
+                output = self._output
+                if exc_type is not None:
+                    output = {"error": f"{exc_type.__name__}: {exc_val}"}
+                self._obs.update(output=output)
+                self._obs.end()
+            except Exception as e:  # noqa: BLE001
+                logger.warning("LangFuse end failed (degraded): %s", e)
         return False  # 不吞异常，让主流程照常传播
 
     def set_output(self, output: dict) -> None:
