@@ -23,7 +23,7 @@
 ## 录屏
 
 - 录屏保存为 `../demo/mvp_demo_v1.mp4`
-- 时长 5–8 分钟，按 `docs/demo_script.md` 的 6 个场景走完
+- 时长 5–8 分钟，按 `docs/v1_demo_script.md` 的 7 个场景走完
 
 ## 本目录当前已自动生成的文件
 

@@ -131,7 +131,7 @@ PubMed "CRISPR cancer" (3420篇)
 | 7 | 单元测试覆盖率 >70% | ✅ 82% |
 | 8 | GitHub Actions CI | ⏳ 已触发，待远程确认绿色 |
 | 9 | GitHub 代码推送 | ✅ 5 commits 已推送 |
-| 10 | MVP 演示录屏 | ⏳ 待录制（脚本见 docs/demo_script.md） |
+| 10 | MVP 演示录屏 | ✅ 已完成（脚本见 docs/v1_demo_script.md） |
 
 ---
 
