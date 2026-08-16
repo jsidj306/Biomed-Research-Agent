@@ -142,15 +142,15 @@ class TestRouting:
         assert route_after_supervisor({}) == "summarize"
 
     def test_critic_low_score_retries(self):
-        """分数低于阈值且未超返工上限 → 打回 summarize。"""
-        assert route_after_critic({"critic_score": 5, "critic_retries": 1}) == "summarize"
+        """分数低于阈值且未超返工上限 → 打回 writer 重写。"""
+        assert route_after_critic({"critic_score": 5, "critic_retries": 1}) == "writer"
 
-    def test_critic_high_score_goes_to_writer(self):
-        assert route_after_critic({"critic_score": 8, "critic_retries": 1}) == "writer"
+    def test_critic_high_score_goes_to_planner(self):
+        assert route_after_critic({"critic_score": 8, "critic_retries": 1}) == "planner"
 
     def test_critic_max_retries_bounded(self):
-        """超返工上限后即使低分也强制进 writer（防死循环）。"""
-        assert route_after_critic({"critic_score": 5, "critic_retries": 3}) == "writer"
+        """超返工上限后即使低分也强制进 planner（防死循环）。"""
+        assert route_after_critic({"critic_score": 5, "critic_retries": 3}) == "planner"
 
 
 # ── 图结构测试 ───────────────────────────────────────────────────────────
@@ -175,8 +175,8 @@ class TestGraphStructure:
         edge_pairs = {(e.source, e.target) for e in app.get_graph().edges}
         assert ("search", "review") in edge_pairs
         assert ("review", "summarize") in edge_pairs
-        assert ("summarize", "critic") in edge_pairs
-        assert ("writer", "planner") in edge_pairs
+        assert ("summarize", "writer") in edge_pairs
+        assert ("writer", "critic") in edge_pairs
         assert ("planner", "__end__") in edge_pairs
 
 
@@ -212,8 +212,8 @@ class TestFullChain:
         assert all_mocks["writer"].write_report.called
         assert all_mocks["planner"].generate_directions.called
 
-    def test_critic_rejects_triggers_rewrite(self, all_mocks, mock_critic, mock_summarizer):
-        """Critic 低分应触发 summarize 重写（summarize_batch 被调用 ≥2 次）。"""
+    def test_critic_rejects_triggers_rewrite(self, all_mocks, mock_critic, mock_writer):
+        """Critic 低分应触发 writer 重写（write_report 被调用 ≥2 次）。"""
         mock_critic.verify.side_effect = [
             {"issues": [{"claim": "x", "problem": "无引用", "severity": "high"}], "overall_score": 3},
             {"issues": [], "overall_score": 9},
@@ -224,7 +224,7 @@ class TestFullChain:
         result = app.invoke({"query": "query"})
 
         assert result["critic_score"] == 9  # 第二次评审通过
-        assert mock_summarizer.summarize_batch.call_count >= 2  # 被打回重写了一次
+        assert mock_writer.write_report.call_count >= 2  # 被打回重写了一次
 
 
 # ── 条件路由端到端测试 ───────────────────────────────────────────────────

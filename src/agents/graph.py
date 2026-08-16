@@ -2,17 +2,20 @@
 LangGraph 多Agent编排 — V2.0「7-Agent 协作」状态图。
 
 把 7 个专职 Agent 串成一张有状态、可条件路由、可自纠错的图。相比 V1.0 的
-线性流水线，这里的关键升级是「回环」——Critic 质检后可按分数把报告打回
-Summarize 重写，形成「生成→质检→返工」的自纠错闭环。
+线性流水线，这里的关键升级是「回环」——Critic 质检 Writer 产出的六段式报告
+（含 [n] 引用），分数不达标就打回 Writer 重写，形成「生成→质检→返工」的
+自纠错闭环。
 
 图结构::
 
     __start__ → supervisor ─(条件边)─┬─→ search → review → summarize ─┐
                                      └────────────→ summarize ───────┤
                                                                      ↓
-                                                                  critic ─(分数<阈值则打回 summarize，最多返工 2 次)
+                                                                  writer ─(六段式报告，含 [n] 引用)
                                                                      ↓
-                                                                  writer → planner → END
+                                                                  critic ─(分数<阈值则打回 writer，最多返工 2 次)
+                                                                     ↓
+                                                                  planner → END
 
 使用示例:
     from src.agents.graph import build_graph
@@ -92,17 +95,17 @@ def route_after_supervisor(state: AgentState) -> str:
 def route_after_critic(state: AgentState) -> str:
     """Critic 节点的条件边路由函数。
 
-    - 分数 < 阈值 且 尚未超返工上限 → 打回 summarize 重写
-    - 否则 → 进入 writer 生成最终报告
+    - 分数 < 阈值 且 尚未超返工上限 → 打回 writer 重写（报告不合格）
+    - 否则 → 进入 planner 生成研究方向（报告已通过）
 
     Returns:
-        str — "summarize" 或 "writer"
+        str — "writer" 或 "planner"
     """
     score = state.get("critic_score", 10.0)
     retries = state.get("critic_retries", 0)
     if score < CRITIC_PASS_SCORE and retries <= MAX_CRITIC_RETRIES:
-        return "summarize"
-    return "writer"
+        return "writer"
+    return "planner"
 
 
 # ── 图构建 ──────────────────────────────────────────────────────────────
@@ -206,7 +209,8 @@ def build_graph(
         return {"summaries": summaries, "final_report": final_report, "gaps": gaps}
 
     def critic_node(state: AgentState) -> dict:
-        report = state.get("final_report", "")
+        # 核查 Writer 产出的六段式报告（含 [n] 引用），而非 Summarizer 的初步摘要
+        report = state.get("report", "")
         papers = state.get("papers", [])
         retries = state.get("critic_retries", 0) + 1
         logger.info("[critic] reviewing report (round %d)", retries)
@@ -254,17 +258,17 @@ def build_graph(
     )
     graph.add_edge("search", "review")
     graph.add_edge("review", "summarize")
-    graph.add_edge("summarize", "critic")
+    graph.add_edge("summarize", "writer")
+    graph.add_edge("writer", "critic")
     graph.add_conditional_edges(
         "critic",
         route_after_critic,
-        {"summarize": "summarize", "writer": "writer"},
+        {"writer": "writer", "planner": "planner"},
     )
-    graph.add_edge("writer", "planner")
     graph.add_edge("planner", END)
 
     logger.info(
-        "LangGraph compiled: supervisor→search→review→summarize⇄critic→writer→planner"
+        "LangGraph compiled: supervisor→search→review→summarize→writer⇄critic→planner"
     )
     return graph.compile()
 
@@ -273,7 +277,7 @@ def build_graph(
 
 
 def _compose_report(state: AgentState, summaries: Any) -> str:
-    """把各阶段产物拼装成初步报告文本（供 Critic 质检）。
+    """把各阶段产物拼装成初步报告文本（轻量进度摘要，供 UI 预览）。
 
     Args:
         state:    当前共享状态

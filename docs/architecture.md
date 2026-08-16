@@ -30,10 +30,10 @@ graph TD
     SUP -->|plan 为空| SU[Summarizer]
     SE --> RV[Review<br/>相关性评分]
     RV --> SU[Summarizer<br/>摘要 + 空白分析]
-    SU --> CR[Critic<br/>交叉验证 + 引用核查]
-    CR -->|分数 < 6 且 ≤2 轮返工| SU
-    CR -->|通过| WR[Writer<br/>六段式报告]
-    WR --> PL[Planner<br/>研究方向推荐]
+    SU --> WR[Writer<br/>六段式报告，含 [n] 引用]
+    WR --> CR[Critic<br/>交叉验证 + 引用核查]
+    CR -->|分数 < 6 且 ≤2 轮返工| WR
+    CR -->|通过| PL[Planner<br/>研究方向推荐]
     PL --> END((END))
 ```
 
@@ -63,7 +63,7 @@ class AgentState(TypedDict, total=False):
     reviews: list[dict]   # Review 相关性评分
     summaries: dict       # Summarizer 摘要
     gaps: list[Any]       # 研究空白（gap analysis）
-    final_report: str     # 初步报告（供 Critic 质检）
+    final_report: str     # 初步报告（Summarize 汇总，供 UI 预览）
     critic_score: float   # Critic 综合评分（0-10）
     critic_issues: list[dict]  # Critic 问题清单
     critic_retries: int   # 已返工轮数
@@ -92,8 +92,8 @@ graph TD
     CITE --> B[模型 B 核查]
     A --> M[合并: issues 并集 + score 取 min]
     B --> M
-    M -->|score < 6 且 retries ≤ 2| SU[打回 Summarizer]
-    M -->|通过| WR[Writer]
+    M -->|score < 6 且 retries ≤ 2| WR[打回 Writer 重写]
+    M -->|通过| PL[Planner]
 ```
 
 防死循环：`MAX_CRITIC_RETRIES = 2`，返工上限内 Critic 最多跑 3 轮。
