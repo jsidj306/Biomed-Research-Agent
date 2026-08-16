@@ -15,8 +15,8 @@ V2.0 演示脚本（一键跑通 6 个场景，用于录屏）。
 注意:
   - 场景 2/5 会真实调 LLM 与 PubMed，需 .env 里 OPENAI_API_KEY / NCBI_API_KEY 有效
   - 场景 4 需要一份文字版 PDF，把顶部 PDF_PATH 改成你的文件路径
-  - 场景 5 的 PDF 导出：本地需 pandoc（+ LaTeX 引擎）或 Docker 内 weasyprint，
-    后端缺失时会打印友好提示而非崩溃
+  - 场景 5 的 PDF 导出：本地需 pandoc 3.x + typst（winget 安装）或 Docker 内
+    weasyprint，后端缺失时会打印友好提示而非崩溃
 """
 
 from __future__ import annotations
