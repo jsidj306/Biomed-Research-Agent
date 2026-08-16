@@ -20,9 +20,18 @@ RUN pip install --no-cache-dir uv && uv sync --frozen --no-dev
 # ---- 源码层 ----
 COPY . .
 
-# 中文字体（PDF 导出用，避免中文变方框）
+# 中文字体（PDF 导出用，避免中文变方框）+ weasyprint 的 Pango/GObject 原生库
+# weasyprint 不是纯 Python：需要 libpango/libgobject 等系统库，仅装字体不够，
+# 否则容器内 PDF 导出会抛 OSError（而非 ImportError），必须显式补齐。
 RUN apt-get update \
-    && apt-get install -y --no-install-recommends fonts-noto-cjk \
+    && apt-get install -y --no-install-recommends \
+        fonts-noto-cjk \
+        libpango-1.0-0 \
+        libpangoft2-1.0-0 \
+        libharfbuzz-subset0 \
+        libgobject-2.0-0 \
+        libffi8 \
+        libgdk-pixbuf-2.0-0 \
     && rm -rf /var/lib/apt/lists/*
 
 EXPOSE 8501

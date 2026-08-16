@@ -30,6 +30,31 @@ class TestBiomedicalDocumentLoader:
         finally:
             os.unlink(tmp_path)
 
+    def test_load_pdf_file(self):
+        """加载 PDF 文件 — 每页一个 Document，含 source/page 元数据。"""
+        import fitz  # PyMuPDF
+
+        loader = BiomedicalDocumentLoader()
+
+        with tempfile.NamedTemporaryFile(suffix=".pdf", delete=False) as f:
+            tmp_path = f.name
+
+        # 用 PyMuPDF 造一个含文字层的单页 PDF
+        doc = fitz.open()
+        page = doc.new_page()
+        page.insert_text((72, 72), "CRISPR is a gene editing tool.")
+        doc.save(tmp_path)
+        doc.close()
+
+        try:
+            docs = loader.load(tmp_path)
+            assert len(docs) == 1
+            assert "CRISPR" in docs[0].page_content
+            assert "source" in docs[0].metadata
+            assert "page" in docs[0].metadata
+        finally:
+            os.unlink(tmp_path)
+
     def test_load_nonexistent_file_raises(self):
         """加载不存在的文件 — 应抛出 FileNotFoundError。"""
         loader = BiomedicalDocumentLoader()

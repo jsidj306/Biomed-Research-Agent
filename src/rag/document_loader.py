@@ -1,19 +1,19 @@
 """
 Biomedical Document Loader — PDF / TXT 文档加载。
 
-支持格式: PDF (PyMuPDF), TXT (TextLoader)
+支持格式: PDF (PyMuPDF), TXT (纯文本)
 统一返回 LangChain Document 对象，下游分块器可直接消费。
 
-PyMuPDF 优势（相比 PyPDF2）:
-- 速度快 10-50 倍（C 底层 MuPDF 引擎）
-- 生物医学双栏排版解析更好
-- 保留段落结构和字体信息
+V2.0 起不再依赖 langchain-community（官方已 sunset）的 PyMuPDFLoader /
+TextLoader，改用项目直接依赖的 PyMuPDF (fitz) 逐页提取 + 原生文本读取：
+  - 消除 DeprecationWarning
+  - 去掉一个 33MB 的过渡依赖
+  - 行为与原实现一致（PDF 每页一个 Document、TXT 整文件一个 Document）
 """
 
 import logging
 from pathlib import Path
 
-from langchain_community.document_loaders import PyMuPDFLoader, TextLoader
 from langchain_core.documents import Document
 
 logger = logging.getLogger(__name__)
@@ -37,13 +37,25 @@ class BiomedicalDocumentLoader:
             file_path: PDF 文件路径
 
         Returns:
-            List[Document] — 每个 Document 对应一页，metadata 含 source/page 等
+            List[Document] — 每个 Document 对应一页，metadata 含 source/page
         """
+        import fitz  # PyMuPDF，延迟导入
+
         logger.info("Loading PDF: %s", file_path)
-        loader = PyMuPDFLoader(file_path)
-        documents = loader.load()
-        logger.info("Loaded %d pages from PDF", len(documents))
-        return documents
+        path = Path(file_path)
+        doc = fitz.open(str(path))
+        try:
+            docs = [
+                Document(
+                    page_content=page.get_text(),
+                    metadata={"source": str(path.resolve()), "page": index},
+                )
+                for index, page in enumerate(doc)
+            ]
+        finally:
+            doc.close()
+        logger.info("Loaded %d pages from PDF", len(docs))
+        return docs
 
     def load_text(self, file_path: str) -> list[Document]:
         """加载纯文本文件。
@@ -52,11 +64,12 @@ class BiomedicalDocumentLoader:
             file_path: TXT 文件路径
 
         Returns:
-            List[Document] — 整个文件作为一个 Document（或按段落拆分）
+            List[Document] — 整个文件作为一个 Document
         """
         logger.info("Loading text: %s", file_path)
-        loader = TextLoader(file_path, encoding="utf-8")
-        return loader.load()
+        path = Path(file_path)
+        text = path.read_text(encoding="utf-8")
+        return [Document(page_content=text, metadata={"source": str(path.resolve())})]
 
     def load(self, file_path: str) -> list[Document]:
         """自动识别文件类型并加载。
