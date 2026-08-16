@@ -12,7 +12,7 @@
 - [ ] `uv run ruff check src/ tests/` 全绿
 - [ ] `.env` 中 `NCBI_API_KEY` / `OPENAI_API_KEY` 有效（搜索和 LLM 会真实调用）
 - [ ] （可选）本地 Neo4j 已启动（`docker-compose up neo4j -d`，或已配 `NEO4J_URI`）
-- [ ] （可选）`uv add weasyprint` 已装（PDF 导出用，否则演示 Markdown/Word 即可）
+- [ ] （可选）PDF 导出：本地 pandoc 已装（兜底），或 Docker 内 weasyprint 开箱即用
 - [ ] 浏览器无痕窗口，网络稳定
 
 ---
@@ -29,9 +29,9 @@ app = build_graph()
 print(app.get_graph().draw_mermaid())
 ```
 
-**台词**：V1.0 是 4 节点线性流水线；V2.0 是 7 节点、带**回环**的图——Critic 质检后按分数
-把报告打回 Summarizer 重写，形成「生成 → 质检 → 返工」的 self-correcting 闭环。这是从
-「流水线」到「会自我纠错的团队」的升级。
+**台词**：V1.0 是 4 节点线性流水线；V2.0 是 7 节点、带**回环**的图——Critic 质检 Writer
+产出的六段式报告后，按分数把报告打回 Writer 重写，形成「生成 → 质检 → 返工」的
+self-correcting 闭环。这是从「流水线」到「会自我纠错的团队」的升级。
 
 ### 场景 2：Critic 交叉验证 + 自纠错（2 分钟，核心）
 

@@ -135,8 +135,10 @@ def export_pdf(report: str, path: str) -> str:
         HTML(string=html).write_pdf(str(path))
         logger.info("Exported PDF (weasyprint) to %s", path)
         return str(Path(path).resolve())
-    except ImportError:
-        logger.info("weasyprint not installed, falling back to pandoc")
+    except Exception:
+        # 未安装，或装了但缺 GTK/Pango 原生库（Windows 常见，抛 OSError 而非
+        # ImportError）→ 一律兜底 pandoc，保证 PDF 导出不因首选后端失败而中断
+        logger.info("weasyprint unavailable, falling back to pandoc")
 
     # 兜底 pandoc（本地 CLI）
     try:
