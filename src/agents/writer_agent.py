@@ -74,7 +74,7 @@ class WriterAgent:
 
     def __init__(
         self,
-        model_name: str = "gpt-4o-mini",
+        model_name: str = "glm-5.2",
         temperature: float = 0.3,
         max_tokens: int = 1024,
     ):
@@ -211,7 +211,10 @@ class WriterAgent:
             + f"\n\n现在撰写 {section} 章节（直接输出 Markdown 正文，"
               "引用用 [n] 标记，不要输出 JSON）。"
         )
-        return self._call_llm(prompt).strip()
+        content = self._call_llm(prompt).strip()
+        # LLM 偶发在正文开头重复输出 "## Abstract" 之类的标题，与 _assemble 拼装时的
+        # "## {section}" 撞车导致重复标题；剥掉开头的 Markdown 标题行。
+        return self._strip_leading_heading(content)
 
     @staticmethod
     def _format_evidence(
@@ -247,6 +250,14 @@ class WriterAgent:
             dir_text = "\n".join(f"- {d}" for d in directions)
             return f"\n已有研究方向建议:\n{dir_text}"
         return ""
+
+    @staticmethod
+    def _strip_leading_heading(text: str) -> str:
+        """剥掉正文开头的 Markdown 标题行，避免与 _assemble 拼装的标题重复。"""
+        lines = text.splitlines()
+        while lines and lines[0].lstrip().startswith("#"):
+            lines.pop(0)
+        return "\n".join(lines).strip()
 
     @staticmethod
     def _assemble(sections: dict[str, str]) -> str:

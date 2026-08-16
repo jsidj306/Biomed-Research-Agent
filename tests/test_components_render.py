@@ -153,7 +153,7 @@ class TestRenderSidebar:
     def test_render_sidebar(self, mock_st):
         mock_st.multiselect.return_value = ["PubMed", "Arxiv"]
         mock_st.slider.return_value = 5
-        mock_st.selectbox.side_effect = ["all", "english", "gpt-4o-mini"]
+        mock_st.selectbox.side_effect = ["all", "english", "glm-5.2"]
 
         config = render_sidebar()
 
@@ -161,4 +161,4 @@ class TestRenderSidebar:
         assert config["max_results"] == 5
         assert config["summary_type"] == "all"
         assert config["language"] == "english"
-        assert config["model"] == "gpt-4o-mini"
+        assert config["model"] == "glm-5.2"

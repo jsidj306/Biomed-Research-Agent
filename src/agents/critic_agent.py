@@ -7,7 +7,7 @@ V1.0 的 Supervisor / Search / Review / Summarizer 都在「生成」内容，�
 
 三种验证手段（各防一类错）:
   1. 交叉验证 (Cross-check): 用两个不同厂商的 LLM 独立判断同一结论，
-     降低单一模型「重复自己的错误」的偏见（GPT vs Claude 才是真正的第二意见）
+     降低单一模型「重复自己的错误」的偏见（GLM vs Kimi 才是真正的第二意见）
   2. 事实核查 (Fact-check): 把结论里的关键声明与检索到的原文逐条比对
   3. 引用核查 (Citation check): **确定性**验证报告里的 [n] 引用是否真实对应
      一篇论文——这一步不用 LLM，纯正则 + 计数，杜绝「编造引用」
@@ -93,16 +93,16 @@ class CriticAgent:
 
     def __init__(
         self,
-        model_a: str = "gpt-4o-mini",
-        model_b: str = "claude-3-5-sonnet",
+        model_a: str = "glm-5.2",
+        model_b: str = "kimi-k2.7-code",
         temperature: float = 0.0,
         max_tokens: int = 1024,
     ):
         """初始化 Critic。
 
         Args:
-            model_a:     主审模型（默认 gpt-4o-mini）
-            model_b:     交叉验证模型（默认 claude，与 model_a 不同厂商）
+            model_a:     主审模型（默认 glm-5.2，智谱）
+            model_b:     交叉验证模型（默认 kimi-k2.7-code，与 model_a 不同厂商）
             temperature: 温度（0.0 —— 核查要确定性）
             max_tokens:  最大输出 token 数
         """

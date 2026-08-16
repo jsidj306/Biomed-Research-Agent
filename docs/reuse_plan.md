@@ -12,7 +12,7 @@
 |------|----------------|--------|----------|
 | Agent 框架 | LangGraph + NeMo Agent Toolkit | 自建 (Python) | ⚠️ 借鉴模式 |
 | RAG | NVIDIA RAG Blueprint + NIM | ChromaDB | ❌ 架构不同 |
-| LLM | Llama NIM 微服务 | API2D → GPT/Claude | ❌ 接口不同 |
+| LLM | Llama NIM 微服务 | GLM-5.2 + Kimi K2.7 code | ❌ 接口不同 |
 | 部署 | Docker Compose + GPU | Windows + WSL 轻量 | ❌ 差异大 |
 | 前端 | 闭源 Docker 前端 | Gradio / Streamlit | ❌ 不可用 |
 | 虚拟筛选 | MolMIM + DiffDock | 暂不需要 | ❌ 跳过 |
@@ -36,7 +36,7 @@ NVIDIA 的四阶段研究循环：
 
 ```
 用户输入主题 → ①LLM生成检索策略 → ②PubMed+CORD-19搜索 
-→ ③ChromaDB存储+检索 → ④GPT生成报告 → ⑤自检空白循环
+→ ③ChromaDB存储+检索 → ④LLM生成报告 → ⑤自检空白循环
 ```
 
 ### 2. LLM-as-Judge 相关性判断
@@ -45,7 +45,7 @@ NVIDIA 的四阶段研究循环：
 
 对每个检索结果，用 LLM 判断是否与查询相关，过滤噪音。
 
-**复用方式**: 直接用 API2D + GPT 实现，prompt 模板：
+**复用方式**: 直接用 GLM-5.2 实现，prompt 模板：
 
 ```
 请判断以下文献是否与查询相关：
@@ -71,7 +71,7 @@ NVIDIA 的四阶段研究循环：
 
 参考报告结构：摘要 → 背景 → 方法 → 结果 → 讨论 → 参考文献
 
-**复用方式**: 直接采用这个结构，设计 prompt 模板引导 GPT 按此格式输出。
+**复用方式**: 直接采用这个结构，设计 prompt 模板引导 LLM 按此格式输出。
 
 ### 5. Prompt 工程参考
 
@@ -83,7 +83,7 @@ NVIDIA 的四阶段研究循环：
 - 反思空白 prompt
 - 文献引用格式规范
 
-**复用方式**: 提取 prompt 模板的核心结构，替换模型调用为 API2D 接口。
+**复用方式**: 提取 prompt 模板的核心结构，替换模型调用为 GLM-5.2 / Kimi 接口。
 
 ---
 
@@ -109,9 +109,9 @@ NVIDIA 的四阶段研究循环：
 │              研究循环编排器 (Orchestrator)          │
 │  Plan → Search → Retrieve → Write → Reflect      │
 ├──────────┬───────────┬───────────┬───────────────┤
-│ PubMed   │ ChromaDB  │ API2D     │ LLM-as-Judge  │
-│ API      │ (RAG)     │ (GPT/     │ (Relevancy    │
-│          │           │  Claude)  │  Check)       │
+│ PubMed   │ ChromaDB  │ GLM/Kimi │ LLM-as-Judge  │
+│ API      │ (RAG)     │ (智谱/   │ (Relevancy    │
+│          │           │  月之暗面)│  Check)       │
 └──────────┴───────────┴───────────┴───────────────┘
 ```
 
@@ -123,7 +123,7 @@ NVIDIA 的四阶段研究循环：
 |------|--------|------|----------|
 | 1 | Prompt 工程参考 | 无 | 0.5h |
 | 2 | 并行搜索模式 | PubMed API | 1h |
-| 3 | LLM-as-Judge 相关性判断 | API2D | 0.5h |
+| 3 | LLM-as-Judge 相关性判断 | GLM-5.2 | 0.5h |
 | 4 | 研究循环架构 | 前3项 | 2h |
 | 5 | 报告生成结构 | 前4项 | 1h |
 

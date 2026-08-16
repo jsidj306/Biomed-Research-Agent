@@ -149,6 +149,25 @@ class TestWriteReport:
 # ── 常量测试 ─────────────────────────────────────────────────────────────
 
 
+class TestStripLeadingHeading:
+    """测试正文开头重复标题的剥离，避免与 _assemble 拼装的 "## {section}" 重复。"""
+
+    def test_strip_duplicate_heading(self):
+        """LLM 偶发输出 "## Abstract" 前缀，应被剥掉。"""
+        text = "## Abstract\n\n这是正文内容 [1]。"
+        assert WriterAgent._strip_leading_heading(text) == "这是正文内容 [1]。"
+
+    def test_strip_multiple_heading_lines(self):
+        """连续多行标题也应全部剥掉。"""
+        text = "# Abstract\n## Methods\n正文。"
+        assert WriterAgent._strip_leading_heading(text) == "正文。"
+
+    def test_keep_body_without_heading(self):
+        """无标题的正文应原样保留。"""
+        text = "这是正文内容 [1]。"
+        assert WriterAgent._strip_leading_heading(text) == "这是正文内容 [1]。"
+
+
 class TestConstants:
     def test_report_sections_order(self):
         assert REPORT_SECTIONS[-1] == "References"

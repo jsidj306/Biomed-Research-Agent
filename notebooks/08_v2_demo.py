@@ -8,7 +8,7 @@ V2.0 演示脚本（一键跑通 6 个场景，用于录屏）。
 分隔标题，并在场景之间暂停（按回车继续），方便边录边讲解。
 
 关键设计:
-  - 场景 5 用「快跑预设」：FastSearchAgent 限制每源 3 篇（各 Agent 默认已是 gpt-4o-mini），
+  - 场景 5 用「快跑预设」：FastSearchAgent 限制每源 3 篇（各 Agent 默认已是 glm-5.2），
     缩短真实检索 + LLM 调用的耗时
   - 所有外部调用（LLM / PDF / 检索）都包 try/except，单点失败只降级提示、不中断录屏
 
@@ -21,7 +21,20 @@ V2.0 演示脚本（一键跑通 6 个场景，用于录屏）。
 
 from __future__ import annotations
 
+import sys
 from pathlib import Path
+
+# Windows 控制台默认 GBK 代码页，print 含 ⏸/🎉 等 emoji 时会抛 UnicodeEncodeError；
+# 强制 stdout/stderr 走 UTF-8，避免录屏时因终端编码崩溃（显示乱码可用 chcp 65001 解决）。
+for _stream in (sys.stdout, sys.stderr):
+    if hasattr(_stream, "reconfigure"):
+        _stream.reconfigure(encoding="utf-8")
+
+# 直接 `python notebooks/08_v2_demo.py` 运行时，Python 只把 notebooks/ 加入 sys.path，
+# 导致 `from src...` 找不到模块；把项目根目录前置，保证任意目录下都能跑。
+_PROJECT_ROOT = Path(__file__).resolve().parent.parent
+if str(_PROJECT_ROOT) not in sys.path:
+    sys.path.insert(0, str(_PROJECT_ROOT))
 
 from src.agents.critic_agent import CriticAgent
 from src.agents.graph import build_graph
@@ -70,7 +83,7 @@ print("【第 1 道关】确定性引用核查（纯正则 + 计数，不调 LLM
 for issue in critic.check_citations(bad_report, sources):
     print(f"  ⚠️  {issue['claim']} — {issue['problem']} (severity={issue['severity']})")
 
-print("\n【第 2+3 道关】两模型交叉验证 + 评分压制（真实调 GPT + Claude，约 5-10 秒）：")
+print("\n【第 2+3 道关】两模型交叉验证 + 评分压制（真实调 GLM + Kimi，约 5-10 秒）：")
 verdict = critic.verify(bad_report, sources)
 print(f"  overall_score = {verdict['overall_score']}（编造引用 → 一票否决压到 ≤ 4.0）")
 print(f"  issues 共 {len(verdict['issues'])} 条")

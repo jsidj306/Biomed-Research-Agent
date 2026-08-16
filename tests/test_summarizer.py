@@ -82,28 +82,35 @@ def mock_llm_response_key_findings():
 class TestPaperSummarizerInit:
     """测试 PaperSummarizer 初始化。"""
 
-    @patch.dict(os.environ, {"OPENAI_API_KEY": "test-key", "OPENAI_BASE_URL": "https://test.api.com/v1"})
+    @patch.dict(os.environ, {"ZHIPU_API_KEY": "zhipu-test-key"})
     def test_default_init(self):
-        """默认参数初始化。"""
+        """默认参数初始化（默认模型 glm-5.2 路由到智谱）。"""
         s = PaperSummarizer()
-        assert s.model_name == "gpt-4o-mini"
+        assert s.model_name == "glm-5.2"
         assert s.temperature == 0.3
         assert s.max_tokens == 1024
 
-    @patch.dict(os.environ, {"OPENAI_API_KEY": "test-key", "OPENAI_BASE_URL": "https://test.api.com/v1"})
+    @patch.dict(os.environ, {"MOONSHOT_API_KEY": "moonshot-test-key"})
     def test_custom_init(self):
         """自定义参数初始化。"""
-        s = PaperSummarizer(model_name="gpt-4o", temperature=0.1, max_tokens=512)
-        assert s.model_name == "gpt-4o"
+        s = PaperSummarizer(model_name="kimi-k2.7-code", temperature=0.1, max_tokens=512)
+        assert s.model_name == "kimi-k2.7-code"
         assert s.temperature == 0.1
         assert s.max_tokens == 512
 
-    @patch.dict(os.environ, {"OPENAI_API_KEY": "test-key", "OPENAI_BASE_URL": "https://oa.api2d.net"})
-    def test_api2d_config(self):
-        """API2D 中转配置正确。"""
+    @patch.dict(os.environ, {"ZHIPU_API_KEY": "zhipu-test-key"})
+    def test_glm_provider_routing(self):
+        """glm 模型应路由到智谱网关。"""
         s = PaperSummarizer()
-        assert s.llm.openai_api_base == "https://oa.api2d.net"
-        assert s.llm.openai_api_key.get_secret_value() == "test-key"
+        assert s.llm.openai_api_base == "https://open.bigmodel.cn/api/paas/v4"
+        assert s.llm.openai_api_key.get_secret_value() == "zhipu-test-key"
+
+    @patch.dict(os.environ, {"MOONSHOT_API_KEY": "moonshot-test-key"})
+    def test_kimi_provider_routing(self):
+        """kimi 模型应路由到月之暗面网关。"""
+        s = PaperSummarizer(model_name="kimi-k2.7-code")
+        assert s.llm.openai_api_base == "https://api.moonshot.cn/v1"
+        assert s.llm.openai_api_key.get_secret_value() == "moonshot-test-key"
 
 
 # ── 简短摘要测试 ────────────────────────────────────────────────────────
@@ -113,14 +120,14 @@ class TestBriefSummary:
     """测试 brief 摘要类型。"""
 
     @patch.dict(os.environ, {"OPENAI_API_KEY": "test-key", "OPENAI_BASE_URL": "https://test.api.com/v1"})
-    @patch("src.agents.summarizer.ChatOpenAI")
-    def test_brief_summary(self, MockChatOpenAI, sample_title, sample_abstract, mock_llm_response_brief):
+    @patch("src.agents.summarizer.create_chat_model")
+    def test_brief_summary(self, MockCreateModel, sample_title, sample_abstract, mock_llm_response_brief):
         """简短摘要生成：返回 one_liner + takeaway。"""
         mock_llm = MagicMock()
         mock_response = MagicMock()
         mock_response.content = mock_llm_response_brief
         mock_llm.invoke.return_value = mock_response
-        MockChatOpenAI.return_value = mock_llm
+        MockCreateModel.return_value = mock_llm
 
         s = PaperSummarizer()
         s.llm = mock_llm  # 注入 mock
@@ -140,14 +147,14 @@ class TestBriefSummary:
         assert result["key_findings"] is None
 
     @patch.dict(os.environ, {"OPENAI_API_KEY": "test-key", "OPENAI_BASE_URL": "https://test.api.com/v1"})
-    @patch("src.agents.summarizer.ChatOpenAI")
-    def test_brief_prompt_format(self, MockChatOpenAI, sample_title, sample_abstract, mock_llm_response_brief):
+    @patch("src.agents.summarizer.create_chat_model")
+    def test_brief_prompt_format(self, MockCreateModel, sample_title, sample_abstract, mock_llm_response_brief):
         """验证 prompt 模板正确格式化了标题和摘要。"""
         mock_llm = MagicMock()
         mock_response = MagicMock()
         mock_response.content = mock_llm_response_brief
         mock_llm.invoke.return_value = mock_response
-        MockChatOpenAI.return_value = mock_llm
+        MockCreateModel.return_value = mock_llm
 
         s = PaperSummarizer()
         s.llm = mock_llm
@@ -167,14 +174,14 @@ class TestDetailedSummary:
     """测试 detailed 摘要类型。"""
 
     @patch.dict(os.environ, {"OPENAI_API_KEY": "test-key", "OPENAI_BASE_URL": "https://test.api.com/v1"})
-    @patch("src.agents.summarizer.ChatOpenAI")
-    def test_detailed_summary(self, MockChatOpenAI, sample_title, sample_abstract, mock_llm_response_detailed):
+    @patch("src.agents.summarizer.create_chat_model")
+    def test_detailed_summary(self, MockCreateModel, sample_title, sample_abstract, mock_llm_response_detailed):
         """详细摘要生成：返回 background/methods/results/conclusions。"""
         mock_llm = MagicMock()
         mock_response = MagicMock()
         mock_response.content = mock_llm_response_detailed
         mock_llm.invoke.return_value = mock_response
-        MockChatOpenAI.return_value = mock_llm
+        MockCreateModel.return_value = mock_llm
 
         s = PaperSummarizer()
         s.llm = mock_llm
@@ -203,14 +210,14 @@ class TestKeyFindings:
     """测试 key_findings 摘要类型。"""
 
     @patch.dict(os.environ, {"OPENAI_API_KEY": "test-key", "OPENAI_BASE_URL": "https://test.api.com/v1"})
-    @patch("src.agents.summarizer.ChatOpenAI")
-    def test_key_findings(self, MockChatOpenAI, sample_title, sample_abstract, mock_llm_response_key_findings):
+    @patch("src.agents.summarizer.create_chat_model")
+    def test_key_findings(self, MockCreateModel, sample_title, sample_abstract, mock_llm_response_key_findings):
         """关键发现摘要：返回 findings 列表 + significance。"""
         mock_llm = MagicMock()
         mock_response = MagicMock()
         mock_response.content = mock_llm_response_key_findings
         mock_llm.invoke.return_value = mock_response
-        MockChatOpenAI.return_value = mock_llm
+        MockCreateModel.return_value = mock_llm
 
         s = PaperSummarizer()
         s.llm = mock_llm
@@ -236,9 +243,9 @@ class TestAllSummary:
     """测试 'all' 摘要类型 — 同时生成三种摘要。"""
 
     @patch.dict(os.environ, {"OPENAI_API_KEY": "test-key", "OPENAI_BASE_URL": "https://test.api.com/v1"})
-    @patch("src.agents.summarizer.ChatOpenAI")
+    @patch("src.agents.summarizer.create_chat_model")
     def test_all_summary_types(
-        self, MockChatOpenAI, sample_title, sample_abstract,
+        self, MockCreateModel, sample_title, sample_abstract,
         mock_llm_response_brief, mock_llm_response_detailed, mock_llm_response_key_findings,
     ):
         """summary_type='all' 应同时填充 brief/detailed/key_findings。"""
@@ -252,7 +259,7 @@ class TestAllSummary:
             MagicMock(content=mock_llm_response_detailed),
             MagicMock(content=mock_llm_response_key_findings),
         ])
-        MockChatOpenAI.return_value = mock_llm
+        MockCreateModel.return_value = mock_llm
 
         s = PaperSummarizer()
         s.llm = mock_llm
@@ -276,8 +283,8 @@ class TestEdgeCases:
     """测试边界条件。"""
 
     @patch.dict(os.environ, {"OPENAI_API_KEY": "test-key", "OPENAI_BASE_URL": "https://test.api.com/v1"})
-    @patch("src.agents.summarizer.ChatOpenAI")
-    def test_short_abstract(self, MockChatOpenAI):
+    @patch("src.agents.summarizer.create_chat_model")
+    def test_short_abstract(self, MockCreateModel):
         """短摘要 (< 50 字) 应返回警告。"""
         s = PaperSummarizer()
         result = s.summarize(
@@ -289,14 +296,14 @@ class TestEdgeCases:
         assert "too short" in result["warning"].lower()
 
     @patch.dict(os.environ, {"OPENAI_API_KEY": "test-key", "OPENAI_BASE_URL": "https://test.api.com/v1"})
-    @patch("src.agents.summarizer.ChatOpenAI")
-    def test_chinese_language(self, MockChatOpenAI, sample_title, sample_abstract, mock_llm_response_brief):
+    @patch("src.agents.summarizer.create_chat_model")
+    def test_chinese_language(self, MockCreateModel, sample_title, sample_abstract, mock_llm_response_brief):
         """中文输出 — prompt 中 language 参数应为 'chinese'。"""
         mock_llm = MagicMock()
         mock_response = MagicMock()
         mock_response.content = mock_llm_response_brief
         mock_llm.invoke.return_value = mock_response
-        MockChatOpenAI.return_value = mock_llm
+        MockCreateModel.return_value = mock_llm
 
         s = PaperSummarizer()
         s.llm = mock_llm
@@ -310,14 +317,14 @@ class TestEdgeCases:
         assert "chinese" in call_args.lower()
 
     @patch.dict(os.environ, {"OPENAI_API_KEY": "test-key", "OPENAI_BASE_URL": "https://test.api.com/v1"})
-    @patch("src.agents.summarizer.ChatOpenAI")
-    def test_long_abstract_truncation(self, MockChatOpenAI, sample_title):
+    @patch("src.agents.summarizer.create_chat_model")
+    def test_long_abstract_truncation(self, MockCreateModel, sample_title):
         """超长摘要 (> 3000 字) 应被截断。"""
         mock_llm = MagicMock()
         mock_response = MagicMock()
         mock_response.content = '{"one_liner": "test", "takeaway": "test"}'
         mock_llm.invoke.return_value = mock_response
-        MockChatOpenAI.return_value = mock_llm
+        MockCreateModel.return_value = mock_llm
 
         s = PaperSummarizer()
         s.llm = mock_llm
@@ -331,14 +338,14 @@ class TestEdgeCases:
         assert len(call_args) < len(long_abstract) + 500  # prompt overhead
 
     @patch.dict(os.environ, {"OPENAI_API_KEY": "test-key", "OPENAI_BASE_URL": "https://test.api.com/v1"})
-    @patch("src.agents.summarizer.ChatOpenAI")
-    def test_batch_summarize(self, MockChatOpenAI, mock_llm_response_brief):
+    @patch("src.agents.summarizer.create_chat_model")
+    def test_batch_summarize(self, MockCreateModel, mock_llm_response_brief):
         """批量摘要：输入 3 篇，输出 3 个结果。"""
         mock_llm = MagicMock()
         mock_response = MagicMock()
         mock_response.content = mock_llm_response_brief
         mock_llm.invoke.return_value = mock_response
-        MockChatOpenAI.return_value = mock_llm
+        MockCreateModel.return_value = mock_llm
 
         s = PaperSummarizer()
         s.llm = mock_llm
@@ -360,14 +367,14 @@ class TestJSONParsing:
     """测试 LLM 响应 JSON 解析的鲁棒性。"""
 
     @patch.dict(os.environ, {"OPENAI_API_KEY": "test-key", "OPENAI_BASE_URL": "https://test.api.com/v1"})
-    @patch("src.agents.summarizer.ChatOpenAI")
-    def test_json_with_markdown_fence(self, MockChatOpenAI, sample_title, sample_abstract):
+    @patch("src.agents.summarizer.create_chat_model")
+    def test_json_with_markdown_fence(self, MockCreateModel, sample_title, sample_abstract):
         """LLM 返回带 ```json fences 的响应应能正确解析。"""
         mock_llm = MagicMock()
         mock_response = MagicMock()
         mock_response.content = '```json\n{"one_liner": "test.", "takeaway": "test."}\n```'
         mock_llm.invoke.return_value = mock_response
-        MockChatOpenAI.return_value = mock_llm
+        MockCreateModel.return_value = mock_llm
 
         s = PaperSummarizer()
         s.llm = mock_llm
@@ -378,14 +385,14 @@ class TestJSONParsing:
         assert result["brief"]["one_liner"] == "test."
 
     @patch.dict(os.environ, {"OPENAI_API_KEY": "test-key", "OPENAI_BASE_URL": "https://test.api.com/v1"})
-    @patch("src.agents.summarizer.ChatOpenAI")
-    def test_json_with_extra_text(self, MockChatOpenAI, sample_title, sample_abstract):
+    @patch("src.agents.summarizer.create_chat_model")
+    def test_json_with_extra_text(self, MockCreateModel, sample_title, sample_abstract):
         """LLM 返回 JSON 前后带额外文字时应能提取。"""
         mock_llm = MagicMock()
         mock_response = MagicMock()
         mock_response.content = 'Here is the summary:\n{"one_liner": "result.", "takeaway": "implication."}\nHope this helps!'
         mock_llm.invoke.return_value = mock_response
-        MockChatOpenAI.return_value = mock_llm
+        MockCreateModel.return_value = mock_llm
 
         s = PaperSummarizer()
         s.llm = mock_llm
@@ -403,14 +410,14 @@ class TestLLMErrorHandling:
     """测试 LLM 返回异常时的降级处理。"""
 
     @patch.dict(os.environ, {"OPENAI_API_KEY": "test-key", "OPENAI_BASE_URL": "https://test.api.com/v1"})
-    @patch("src.agents.summarizer.ChatOpenAI")
-    def test_unparseable_response_raises(self, MockChatOpenAI):
+    @patch("src.agents.summarizer.create_chat_model")
+    def test_unparseable_response_raises(self, MockCreateModel):
         """完全无法解析的响应应抛出 ValueError。"""
         mock_llm = MagicMock()
         mock_response = MagicMock()
         mock_response.content = "completely invalid not-json response"
         mock_llm.invoke.return_value = mock_response
-        MockChatOpenAI.return_value = mock_llm
+        MockCreateModel.return_value = mock_llm
 
         s = PaperSummarizer()
         s.llm = mock_llm
@@ -420,8 +427,8 @@ class TestLLMErrorHandling:
             s._call_llm.__wrapped__(s, "test prompt")
 
     @patch.dict(os.environ, {"OPENAI_API_KEY": "test-key", "OPENAI_BASE_URL": "https://test.api.com/v1"})
-    @patch("src.agents.summarizer.ChatOpenAI")
-    def test_summarize_handles_llm_error(self, MockChatOpenAI, sample_title, sample_abstract):
+    @patch("src.agents.summarizer.create_chat_model")
+    def test_summarize_handles_llm_error(self, MockCreateModel, sample_title, sample_abstract):
         """LLM 调用抛异常时，摘要结果应降级为 None 而非崩溃。"""
         s = PaperSummarizer()
         s._call_llm = MagicMock(side_effect=Exception("LLM down"))

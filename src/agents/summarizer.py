@@ -1,7 +1,7 @@
 """
 Paper Summarizer — LLM 驱动的论文摘要生成器。
 
-使用 API2D (OpenAI 兼容) 的中转 API，调用 LLM 对生物医学论文生成结构化摘要。
+通过 OpenAI 兼容接口调用多厂商 LLM（智谱 GLM / 月之暗面 Kimi），对论文生成结构化摘要。
 V1.0 支持 5 种摘要模式，覆盖「读单篇 / 读多篇 / 找空白」三大需求:
   - brief:        一句话概括 + 关键启示
   - standard:     背景 / 方法 / 结果 / 结论 四段式
@@ -22,17 +22,17 @@ V1.0 支持 5 种摘要模式，覆盖「读单篇 / 读多篇 / 找空白」三
 """
 
 import logging
-import os
 from typing import Any, Literal
 
 from dotenv import load_dotenv
-from langchain_openai import ChatOpenAI
 from tenacity import (
     before_sleep_log,
     retry,
     stop_after_attempt,
     wait_exponential,
 )
+
+from src.utils.llm_utils import create_chat_model
 
 load_dotenv()
 
@@ -147,8 +147,8 @@ Provide 3-5 insightful, non-generic gaps. Return ONLY valid JSON, no markdown fe
 class PaperSummarizer:
     """LLM 驱动的生物医学论文摘要生成器。
 
-    通过 API2D 中转调用 OpenAI 兼容的 LLM API，对论文标题+摘要生成
-    结构化摘要。支持单篇（brief/standard/detailed/key_findings）和
+    通过 OpenAI 兼容接口调用 LLM（按模型名自动路由到智谱 GLM / 月之暗面 Kimi），
+    对论文标题+摘要生成结构化摘要。支持单篇（brief/standard/detailed/key_findings）和
     多篇（comparison/gap_analysis）两类模式。
 
     Attributes:
@@ -159,35 +159,26 @@ class PaperSummarizer:
 
     def __init__(
         self,
-        model_name: str = "gpt-4o-mini",
+        model_name: str = "glm-5.2",
         temperature: float = 0.3,
         max_tokens: int = 1024,
     ):
         """初始化摘要生成器。
 
         Args:
-            model_name:  LLM 模型名称 (gpt-4o-mini / gpt-4o / gpt-3.5-turbo)
+            model_name:  LLM 模型名称 (glm-5.2 / kimi-k2.7-code)
             temperature: LLM 温度 (0-1)，越低越确定
             max_tokens:  LLM 最大输出 token 数
         """
-        api_key = os.getenv("OPENAI_API_KEY", "")
-        base_url = os.getenv("OPENAI_BASE_URL", "https://api.openai.com/v1")
-
         self.model_name = model_name
         self.temperature = temperature
         self.max_tokens = max_tokens
 
-        self.llm = ChatOpenAI(
-            model=model_name,
-            temperature=temperature,
-            max_tokens=max_tokens,
-            api_key=api_key,
-            base_url=base_url,
-        )
+        self.llm = create_chat_model(model_name, temperature, max_tokens)
 
         logger.info(
             "PaperSummarizer ready: model=%s, base_url=%s, temp=%.2f",
-            model_name, base_url, temperature,
+            model_name, self.llm.openai_api_base, temperature,
         )
 
     # ── 公开接口：单篇摘要 ──────────────────────────────────────────────

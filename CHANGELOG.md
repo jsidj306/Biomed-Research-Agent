@@ -10,7 +10,7 @@
   `Supervisor → Search → Review → Summarizer ⇄ Critic → Writer → Planner` 状态图。
 - **自纠错回环**：Critic 质检 + 条件路由，分数低于阈值（6.0）时打回 Summarizer 重写，
   最多返工 2 轮（`MAX_CRITIC_RETRIES`）。
-- **Critic Agent**（`src/agents/critic_agent.py`）：两模型交叉验证（GPT + Claude）、
+- **Critic Agent**（`src/agents/critic_agent.py`）：两模型交叉验证（GLM + Kimi）、
   事实核查、确定性引用核查（纯正则，`check_citations`）。
 - **Writer Agent**（`src/agents/writer_agent.py`）：六段式报告（Abstract/Methods/
   Findings/Gaps/Directions/References）+ BibTeX 生成（`build_bibtex`）。

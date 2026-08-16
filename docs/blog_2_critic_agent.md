@@ -57,17 +57,17 @@ def check_citations(report: str, sources: list[dict]) -> list[dict]:
 
 > 一句话：**能确定性地验证的东西，就别交给概率模型。** 这是对抗幻觉最硬的一道防线。
 
-### 2.2 第二道关：两模型交叉验证——GPT 与 Claude 做「第二意见」
+### 2.2 第二道关：两模型交叉验证——GLM 与 Kimi 做「第二意见」
 
 引用核查只能抓「编造编号」，但抓不住「结论夸大」「张冠李戴」这类语义层面的错。这个就得靠 LLM 了——但**不是一个，是两个，而且必须是不同厂商**。
 
 ```python
 # 两个不同模型交叉验证
-self.llm_a = create_chat_model("gpt-4o-mini", temperature=0.0, max_tokens=1024)
-self.llm_b = create_chat_model("claude-3-5-sonnet", temperature=0.0, max_tokens=1024)
+self.llm_a = create_chat_model("glm-5.2", temperature=0.0, max_tokens=1024)
+self.llm_b = create_chat_model("kimi-k2.7-code", temperature=0.0, max_tokens=1024)
 ```
 
-关键在「**不同厂商**」。同一个模型（哪怕是不同温度）会共享同一套偏见，它「自我检查」时容易重复自己的错误。换成 GPT + Claude，才是真正的「第二意见」——两个独立训练的模型，很难犯一模一样的错。
+关键在「**不同厂商**」。同一个模型（哪怕是不同温度）会共享同一套偏见，它「自我检查」时容易重复自己的错误。换成 GLM + Kimi，才是真正的「第二意见」——两个独立训练的模型，很难犯一模一样的错。
 
 合并结果时，规则是「**两模型都认可才通过**」：
 
@@ -140,7 +140,7 @@ def test_fabricated_citation_caps_score(self, sources):
     assert result["overall_score"] <= 4.0
 ```
 
-**3. 两模型都挂了，不能误判。** 如果 GPT 和 Claude 同时因为网络/监控问题失败，Critic 会给一个中性默认分（10 分，不扣分），绝不因为「自己状态不好」就误伤一份好报告。降级策略是生产级 Agent 的基本素养——这条上一篇讲过，这里又用上了。
+**3. 两模型都挂了，不能误判。** 如果 GLM 和 Kimi 同时因为网络/监控问题失败，Critic 会给一个中性默认分（10 分，不扣分），绝不因为「自己状态不好」就误伤一份好报告。降级策略是生产级 Agent 的基本素养——这条上一篇讲过，这里又用上了。
 
 **4. 生成与质检分离，是我认为这次最值钱的架构决策。** 它把「能不能写」和「写得对不对」拆成了两个正交的问题，每个都能独立优化、独立测试。回头看，这比「换一个更强的模型」性价比高得多。
 

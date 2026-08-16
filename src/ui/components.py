@@ -282,9 +282,9 @@ def render_sidebar() -> dict[str, Any]:
 
         model = st.selectbox(
             "LLM Model",
-            options=["gpt-4o-mini", "gpt-4o", "gpt-3.5-turbo"],
+            options=["glm-5.2", "kimi-k2.7-code"],
             index=0,
-            help="GPT-4o-mini is fast and affordable (recommended)",
+            help="glm-5.2 (智谱) 默认；kimi-k2.7-code (月之暗面) 交叉验证",
         )
 
         st.divider()

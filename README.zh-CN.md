@@ -22,7 +22,7 @@
   （有上限，最多返工 2 轮，防死循环）。
 - **确定性引用核查**——编造的 `[n]` 引用用纯正则 + 计数抓，不靠 LLM。只有 4 篇文献
   却出现 `[9]`，必然被标记为 high 严重度。
-- **跨模型交叉验证**——Critic 用两家不同厂商（GPT + Claude）做真正的第二意见。
+- **跨模型交叉验证**——Critic 用两家不同厂商（GLM + Kimi）做真正的第二意见。
 - **知识图谱**——抽取「药物-靶点-疾病」三元组写入 **Neo4j**（MERGE 幂等写入）。
 - **全文级 RAG**——用 **PyMuPDF** 解析 PDF 全文（Unstructured.io 兜底），不再只读摘要。
 - **报告导出**——一次调用导出 Markdown / PDF / Word，附 BibTeX 引用。
@@ -119,8 +119,8 @@ uv run streamlit run src/ui/app.py
 | 变量 | 必填 | 用途 |
 |----------|----------|---------|
 | `NCBI_API_KEY` / `NCBI_EMAIL` | 是 | PubMed / NCBI E-utilities |
-| `OPENAI_API_KEY` | 是 | 主 LLM（兼容 OpenAI 的 base URL） |
-| `ANTHROPIC_API_KEY` | 可选 | 跨模型验证（Critic 的第二意见） |
+| `ZHIPU_API_KEY` | 是 | 智谱 GLM（主审 / 默认模型） |
+| `MOONSHOT_API_KEY` | 是 | 月之暗面 Kimi（Critic 交叉验证第二意见） |
 | `SEMANTIC_SCHOLAR_API_KEY` | 可选 | Semantic Scholar（无 Key 有速率限制） |
 | `LANGFUSE_PUBLIC_KEY` / `LANGFUSE_SECRET_KEY` / `LANGFUSE_HOST` | 可选 | LLM 可观测性 |
 

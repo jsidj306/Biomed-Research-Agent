@@ -201,7 +201,7 @@ def main():
     print("=" * 65)
     print("  Paper Summarizer — Integration Verification")
     print("=" * 65)
-    print("  LLM Model: GPT-4o-mini via API2D")
+    print("  LLM Model: glm-5.2 (智谱)")
     print("  摘要类型: brief / detailed / key_findings / batch")
 
     tests = [

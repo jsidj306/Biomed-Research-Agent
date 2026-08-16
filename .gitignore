@@ -19,6 +19,10 @@ htmlcov/
 
 # Data storage (auto-generated, not tracked)
 data/chroma_*/
+data/papers/
+
+# Demo/export artifacts (generated during run/demo)
+out/
 
 # IDE
 .vscode/

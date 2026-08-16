@@ -24,7 +24,7 @@ Built with **LangChain + LangGraph** orchestration, **ChromaDB** vector retrieva
   `Summarizer` for rewrite until it passes (bounded, max 2 rewrites).
 - **Deterministic citation checking** — fabricated `[n]` references are caught by plain
   regex + counting, *not* by an LLM, so a `[9]` with only 4 sources is always flagged.
-- **Cross-model validation** — the Critic uses two different vendors (GPT + Claude) as a
+- **Cross-model validation** — the Critic uses two different vendors (GLM + Kimi) as a
   genuine second opinion.
 - **Knowledge graph** — extracts drug–target–disease triples and writes them to **Neo4j**
   (MERGE-based, idempotent).
@@ -129,8 +129,8 @@ Copy `.env.example` → `.env`:
 | Variable | Required | Purpose |
 |----------|----------|---------|
 | `NCBI_API_KEY` / `NCBI_EMAIL` | Yes | PubMed / NCBI E-utilities |
-| `OPENAI_API_KEY` | Yes | Primary LLM (via API2D-compatible base URL) |
-| `ANTHROPIC_API_KEY` | Optional | Cross-model validation (Critic's second opinion) |
+| `ZHIPU_API_KEY` | Yes | 智谱 GLM（主审 / 默认模型） |
+| `MOONSHOT_API_KEY` | Yes | 月之暗面 Kimi（Critic 交叉验证第二意见） |
 | `SEMANTIC_SCHOLAR_API_KEY` | Optional | Semantic Scholar (rate limit without key) |
 | `LANGFUSE_PUBLIC_KEY` / `LANGFUSE_SECRET_KEY` / `LANGFUSE_HOST` | Optional | LLM observability |
 

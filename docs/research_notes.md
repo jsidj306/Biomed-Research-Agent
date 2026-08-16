@@ -5,6 +5,21 @@
 
 ---
 
+## 2026-08-16
+
+### LLM 供应商切换：API2D → 智谱 GLM + 月之暗面 Kimi
+
+- **背景**：API2D 余额/稳定性问题，决定弃用单一中转，改多厂商直连。
+- **主审模型**：智谱 `glm-5.2`（`https://open.bigmodel.cn/api/paas/v4`，env `ZHIPU_API_KEY`）。
+- **交叉验证第二意见**：月之暗面 `kimi-k2.7-code`（`https://api.moonshot.cn/v1`，env `MOONSHOT_API_KEY`），沿用「两厂商交叉验证」结构，取代此前的 GPT + Claude。
+- **关键实现**：`src/utils/llm_utils.py` 按模型名前缀路由（`_resolve_provider`），默认模型名全部从 `gpt-4o-mini` 改为 `glm-5.2`。
+- **两个踩坑**（务必记住）：
+  1. langchain-openai 1.4+ 会把 `max_tokens` 无条件改写为 `max_completion_tokens`，只对原生 OpenAI 模型合法；智谱/Kimi 等第三方网关会报错，故只在 `gpt-*`/`o1`/`o3`/`o4` 前缀时才传 `max_tokens`。
+  2. Kimi K2.7 code 是思维链推理模型，只接受 `temperature=1`，传其它值报 `invalid temperature`，故 `_normalize_temperature` 对其强制置 1。
+- **验证**：`glm-5.2` / `kimi-k2.7-code` 实调均 `OK`；Critic `verify()` 端到端返回 `overall_score=2.0, issues=6`。测试 **265 passed + 4 deselected**，覆盖率 87%，ruff 全绿。
+
+---
+
 ## 2026-08-11
 
 ### 网络架构备忘
@@ -24,7 +39,7 @@
 | 服务 | Key | 状态 |
 |------|-----|------|
 | NCBI PubMed | `ecb25dde...` | ✅ |
-| API2D (GPT) | `fk248541-...` | ✅ |
+| API2D (GPT) | `fk248541-...` | ❌ 已弃用 (08-16 切 GLM+Kimi) |
 | Semantic Scholar | 待审核 | ⏳ |
 
 ---

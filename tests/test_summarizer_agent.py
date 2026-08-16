@@ -47,7 +47,7 @@ def _make_summarizer(mock_llm):
     with patch.dict(
         os.environ,
         {"OPENAI_API_KEY": "test-key", "OPENAI_BASE_URL": "https://test.api.com/v1"},
-    ), patch("src.agents.summarizer.ChatOpenAI", return_value=mock_llm):
+    ), patch("src.agents.summarizer.create_chat_model", return_value=mock_llm):
         s = PaperSummarizer()
     s.llm = mock_llm
     return s

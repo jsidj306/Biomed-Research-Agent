@@ -71,7 +71,7 @@ def sample_summary_brief():
         },
         "detailed": None,
         "key_findings": None,
-        "model": "gpt-4o-mini",
+        "model": "glm-5.2",
         "tokens_used": 150,
     }
 
@@ -89,7 +89,7 @@ def sample_summary_detailed():
             "conclusions": "Personalized mRNA vaccines warrant phase III investigation."
         },
         "key_findings": None,
-        "model": "gpt-4o-mini",
+        "model": "glm-5.2",
     }
 
 
@@ -109,7 +109,7 @@ def sample_summary_key_findings():
             ],
             "significance": "First evidence of personalized mRNA vaccine efficacy in PDAC."
         },
-        "model": "gpt-4o-mini",
+        "model": "glm-5.2",
     }
 
 
@@ -238,7 +238,7 @@ class TestSummaryFormatValidation:
     def test_summary_has_model_info(self, sample_summary_brief):
         """摘要结果包含模型元数据。"""
         assert "model" in sample_summary_brief
-        assert sample_summary_brief["model"] == "gpt-4o-mini"
+        assert sample_summary_brief["model"] == "glm-5.2"
 
 
 # ── 搜索流程集成测试 (Mock) ─────────────────────────────────────────────
@@ -294,13 +294,13 @@ class TestSidebarConfig:
             "max_results": 5,
             "summary_type": "all",
             "language": "english",
-            "model": "gpt-4o-mini",
+            "model": "glm-5.2",
         }
         assert len(defaults["search_source"]) == 2
         assert 1 <= defaults["max_results"] <= 20
         assert defaults["summary_type"] in ["all", "brief", "detailed", "key_findings"]
         assert defaults["language"] in ["english", "chinese"]
-        assert defaults["model"] in ["gpt-4o-mini", "gpt-4o", "gpt-3.5-turbo"]
+        assert defaults["model"] in ["glm-5.2", "kimi-k2.7-code"]
 
 
 # ── 论文卡片数据提取 ────────────────────────────────────────────────────

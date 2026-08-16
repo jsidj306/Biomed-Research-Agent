@@ -91,7 +91,7 @@ class PlannerAgent:
 
     def __init__(
         self,
-        model_name: str = "gpt-4o-mini",
+        model_name: str = "glm-5.2",
         temperature: float = 0.3,
         max_tokens: int = 1024,
     ):

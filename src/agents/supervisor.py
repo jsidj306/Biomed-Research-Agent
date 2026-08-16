@@ -87,7 +87,7 @@ class SupervisorAgent:
 
     def __init__(
         self,
-        model_name: str = "gpt-4o-mini",
+        model_name: str = "glm-5.2",
         temperature: float = 0.2,
         max_tokens: int = 512,
     ):

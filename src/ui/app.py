@@ -68,7 +68,7 @@ def get_arxiv_tool():
 
 
 @st.cache_resource
-def get_summarizer(model: str = "gpt-4o-mini"):
+def get_summarizer(model: str = "glm-5.2"):
     return PaperSummarizer(model_name=model, temperature=0.3)
 
 
@@ -131,7 +131,7 @@ def generate_summary_for_paper(paper: dict, config: dict) -> dict:
     Returns:
         PaperSummarizer.summarize() 的结果
     """
-    summarizer = get_summarizer(model=config.get("model", "gpt-4o-mini"))
+    summarizer = get_summarizer(model=config.get("model", "glm-5.2"))
     title = paper.get("title", "")
     abstract = paper.get("abstract", paper.get("summary", ""))
 
