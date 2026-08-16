@@ -8,11 +8,14 @@ from unittest.mock import MagicMock, patch
 import pytest
 
 from src.ui.components import (
+    _linkify_citations,
+    build_pmid_link,
     render_brief_summary,
     render_detailed_summary,
     render_key_findings,
     render_paper_card,
     render_paper_list,
+    render_report,
     render_sidebar,
     render_summary_tabs,
 )
@@ -101,6 +104,46 @@ class TestRenderPaperCard:
     def test_render_paper_list(self, mock_st, paper):
         render_paper_list([paper, paper], max_display=1)
         assert mock_st.markdown.called
+
+
+# ── 引用溯源 ──────────────────────────────────────────────────────────────
+
+
+class TestCitationTraceability:
+    """测试 PMID 链接与 [n] 引用溯源。"""
+
+    def test_build_pmid_link(self):
+        link = build_pmid_link("38200123")
+        assert "pubmed.ncbi.nlm.nih.gov/38200123" in link
+
+    def test_build_pmid_link_empty(self):
+        assert build_pmid_link("") == ""
+
+    def test_linkify_replaces_valid_citation(self):
+        report = "结论 [1] 表明……"
+        papers = [{"pmid": "38200123"}]
+        rendered = _linkify_citations(report, papers)
+        assert "[1](https://pubmed.ncbi.nlm.nih.gov/38200123/)" in rendered
+
+    def test_linkify_keeps_fabricated_citation(self):
+        """超出 papers 范围的引用应保留原样（杜绝编造引用）。"""
+        report = "结论 [5] 表明……"
+        papers = [{"pmid": "38200123"}]
+        rendered = _linkify_citations(report, papers)
+        assert "[5]" in rendered
+        assert "pubmed" not in rendered
+
+    def test_linkify_no_papers_unchanged(self):
+        report = "结论 [1] 表明……"
+        assert _linkify_citations(report, []) == report
+
+    def test_render_report(self, mock_st):
+        render_report("## Abstract\n\n内容 [1]。", [{"pmid": "38200123"}])
+        assert mock_st.markdown.called
+
+    def test_render_report_empty(self, mock_st):
+        render_report("")
+        assert mock_st.info.called
 
 
 # ── 侧边栏渲染 ────────────────────────────────────────────────────────────

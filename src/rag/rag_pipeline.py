@@ -122,6 +122,41 @@ class RAGPipeline:
         logger.info("Ingested %d texts → %d chunks", len(texts), count)
         return count
 
+    def ingest_fulltext(
+        self,
+        pdf_path: str,
+        chunk_size: int = 1500,
+        chunk_overlap: int = 300,
+    ) -> int:
+        """摄入一篇 PDF 全文（全文级 RAG）。
+
+        与 ingest_pdf 的区别：全文分块更大（1500/300），且直接用
+        FulltextLoader 提取完整正文（含方法/结果/讨论），而非逐页加载。
+        这样检索能命中摘要里没有、只有正文里有的细节（如具体实验参数）。
+
+        Args:
+            pdf_path:      PDF 文件路径
+            chunk_size:    全文分块大小（默认 1500）
+            chunk_overlap: 全文分块重叠（默认 300）
+
+        Returns:
+            int — 存入 ChromaDB 的文档块数量
+        """
+        from src.rag.fulltext_loader import FulltextLoader
+
+        loader = FulltextLoader()
+        docs = loader.load(pdf_path)
+        logger.info("Fulltext loaded: %d document(s)", len(docs))
+
+        splitter = BiomedicalTextSplitter(
+            chunk_size=chunk_size,
+            chunk_overlap=chunk_overlap,
+        )
+        chunks = splitter.split(docs)
+        count = self.store.index_documents(chunks, self.embeddings.embedding_model)
+        logger.info("Indexed %d fulltext chunks → ChromaDB", count)
+        return count
+
     # ── 搜索 ──────────────────────────────────────────────────────────
 
     def search(self, query: str, k: int = 5) -> list[dict[str, Any]]:

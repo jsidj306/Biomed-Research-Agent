@@ -10,7 +10,6 @@
 from src.rag.eval_set import CORPUS, QUERIES, TfidfSemanticRanker, build_eval_set
 from src.rag.hybrid_search import HybridRetriever, mean_reciprocal_rank, recall_at_k
 
-
 # ── 评测集结构测试 ─────────────────────────────────────────────────────────
 
 
@@ -55,7 +54,7 @@ class TestMeasurability:
         retriever = HybridRetriever(corpus)
         eval_set = build_eval_set()
 
-        search_fn = lambda q: [r["index"] for r in retriever.search(q, ranker.rank, k=10)]  # noqa: E731
+        search_fn = lambda q: [r["index"] for r in retriever.search(q, ranker.rank, k=10)]
 
         mrr = mean_reciprocal_rank(eval_set, search_fn)
         recall = recall_at_k(eval_set, search_fn)

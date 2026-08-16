@@ -3,7 +3,7 @@ LangGraph 多Agent编排 — 单元测试。
 
 运行: uv run pytest tests/test_graph.py -v
 
-通过注入 mock Agent 来验证图结构、状态流转和条件路由，
+通过注入 mock Agent 来验证图结构、状态流转和条件路由（含 Critic 自纠错回环），
 不触发真实 LLM / API 调用。
 """
 
@@ -15,10 +15,11 @@ from src.agents.graph import (
     AgentState,
     _compose_report,
     build_graph,
+    route_after_critic,
     route_after_supervisor,
 )
 
-# ── Fixtures：mock 4 个 Agent ────────────────────────────────────────────
+# ── Fixtures：mock 7 个 Agent ────────────────────────────────────────────
 
 
 @pytest.fixture
@@ -60,12 +61,46 @@ def mock_summarizer():
 
 
 @pytest.fixture
-def all_mocks(mock_supervisor, mock_search_agent, mock_review_agent, mock_summarizer):
+def mock_critic():
+    c = MagicMock()
+    c.verify.return_value = {"issues": [], "overall_score": 10}
+    return c
+
+
+@pytest.fixture
+def mock_writer():
+    w = MagicMock()
+    w.write_report.return_value = "## Abstract\n\nsummary\n\n## References\n\n[1] Paper A"
+    return w
+
+
+@pytest.fixture
+def mock_planner():
+    p = MagicMock()
+    p.generate_directions.return_value = [
+        {"title": "Direction 1", "feasibility": "high", "novelty": "high"},
+    ]
+    return p
+
+
+@pytest.fixture
+def all_mocks(
+    mock_supervisor,
+    mock_search_agent,
+    mock_review_agent,
+    mock_summarizer,
+    mock_critic,
+    mock_writer,
+    mock_planner,
+):
     return {
         "supervisor": mock_supervisor,
         "search_agent": mock_search_agent,
         "review_agent": mock_review_agent,
         "summarizer": mock_summarizer,
+        "critic": mock_critic,
+        "writer": mock_writer,
+        "planner": mock_planner,
     }
 
 
@@ -76,9 +111,12 @@ class TestAgentState:
     """测试 AgentState Schema 定义完整性。"""
 
     def test_state_has_all_fields(self):
-        """AgentState 应包含 query/plan/papers/reviews/summaries/final_report。"""
-        required = {"query", "plan", "papers", "reviews", "summaries", "final_report"}
-        # TypedDict 的字段名在 __annotations__ 中
+        """AgentState 应包含 V2.0 全部字段。"""
+        required = {
+            "query", "plan", "papers", "reviews", "summaries", "gaps",
+            "final_report", "critic_score", "critic_issues", "critic_retries",
+            "report", "directions",
+        }
         assert required.issubset(set(AgentState.__annotations__))
 
     def test_state_partial_construction(self):
@@ -92,19 +130,27 @@ class TestAgentState:
 
 
 class TestRouting:
-    """测试 Supervisor 条件边路由逻辑。"""
+    """测试 Supervisor / Critic 的条件边路由逻辑。"""
 
     def test_route_with_plan_goes_to_search(self):
-        """plan 非空 → 路由到 search。"""
         assert route_after_supervisor({"plan": ["step1"]}) == "search"
 
     def test_route_without_plan_goes_to_summarize(self):
-        """plan 为空 → 直接 summarize。"""
         assert route_after_supervisor({"plan": []}) == "summarize"
 
     def test_route_missing_plan_key(self):
-        """plan 字段缺失 → 视为无需检索。"""
         assert route_after_supervisor({}) == "summarize"
+
+    def test_critic_low_score_retries(self):
+        """分数低于阈值且未超返工上限 → 打回 summarize。"""
+        assert route_after_critic({"critic_score": 5, "critic_retries": 1}) == "summarize"
+
+    def test_critic_high_score_goes_to_writer(self):
+        assert route_after_critic({"critic_score": 8, "critic_retries": 1}) == "writer"
+
+    def test_critic_max_retries_bounded(self):
+        """超返工上限后即使低分也强制进 writer（防死循环）。"""
+        assert route_after_critic({"critic_score": 5, "critic_retries": 3}) == "writer"
 
 
 # ── 图结构测试 ───────────────────────────────────────────────────────────
@@ -114,49 +160,47 @@ class TestGraphStructure:
     """测试 StateGraph 编译后的节点/边结构。"""
 
     def test_graph_compiles(self, all_mocks):
-        """build_graph 能成功编译。"""
         app = build_graph(**all_mocks)
         assert app is not None
 
     def test_graph_nodes(self, all_mocks):
-        """图应包含 4 个节点。"""
+        """图应包含 7 个节点。"""
         app = build_graph(**all_mocks)
         nodes = set(app.get_graph().nodes)
-        assert {"supervisor", "search", "review", "summarize"}.issubset(nodes)
+        assert {"supervisor", "search", "review", "summarize", "critic", "writer", "planner"}.issubset(nodes)
 
     def test_graph_has_edges(self, all_mocks):
-        """图应有 supervisor→search→review→summarize 的边连接。"""
+        """图应有 7-Agent 的边连接。"""
         app = build_graph(**all_mocks)
-        # edges 是 Edge 对象列表，比较其 (source, target)
         edge_pairs = {(e.source, e.target) for e in app.get_graph().edges}
         assert ("search", "review") in edge_pairs
         assert ("review", "summarize") in edge_pairs
-        assert ("summarize", "__end__") in edge_pairs
+        assert ("summarize", "critic") in edge_pairs
+        assert ("writer", "planner") in edge_pairs
+        assert ("planner", "__end__") in edge_pairs
 
 
 # ── 全链路 invoke 测试 ───────────────────────────────────────────────────
 
 
 class TestFullChain:
-    """测试 invoke 走完 supervisor→search→review→summarize 全链路。"""
+    """测试 invoke 走完 7-Agent 全链路。"""
 
     def test_invoke_full_chain(self, all_mocks):
         """正常 query（有 plan）走完整链路，各节点产物写入 State。"""
         app = build_graph(**all_mocks)
         result = app.invoke({"query": "CAR-T therapy for solid tumors"})
 
-        # Supervisor 生成 plan
         assert result["plan"] == all_mocks["supervisor"].generate_plan.return_value
-        # Search 生成 papers
         assert result["papers"] == all_mocks["search_agent"].search_all.return_value
-        # Review 生成 reviews
         assert result["reviews"] == all_mocks["review_agent"].review.return_value
-        # Summarize 生成 final_report
-        assert result["final_report"]
+        assert result["critic_score"] == 10
+        assert result["report"]  # Writer 产出六段式报告
+        assert result["directions"]  # Planner 产出研究方向
         assert "CAR-T" in all_mocks["supervisor"].generate_plan.call_args[0][0]
 
     def test_invoke_updates_state_sequentially(self, all_mocks):
-        """节点按 supervisor→search→review→summarize 顺序执行。"""
+        """节点按 supervisor→…→planner 顺序执行。"""
         app = build_graph(**all_mocks)
         app.invoke({"query": "query"})
 
@@ -164,6 +208,23 @@ class TestFullChain:
         assert all_mocks["search_agent"].search_all.called
         assert all_mocks["review_agent"].review.called
         assert all_mocks["summarizer"].summarize_batch.called
+        assert all_mocks["critic"].verify.called
+        assert all_mocks["writer"].write_report.called
+        assert all_mocks["planner"].generate_directions.called
+
+    def test_critic_rejects_triggers_rewrite(self, all_mocks, mock_critic, mock_summarizer):
+        """Critic 低分应触发 summarize 重写（summarize_batch 被调用 ≥2 次）。"""
+        mock_critic.verify.side_effect = [
+            {"issues": [{"claim": "x", "problem": "无引用", "severity": "high"}], "overall_score": 3},
+            {"issues": [], "overall_score": 9},
+        ]
+        all_mocks["critic"] = mock_critic
+
+        app = build_graph(**all_mocks)
+        result = app.invoke({"query": "query"})
+
+        assert result["critic_score"] == 9  # 第二次评审通过
+        assert mock_summarizer.summarize_batch.call_count >= 2  # 被打回重写了一次
 
 
 # ── 条件路由端到端测试 ───────────────────────────────────────────────────
@@ -182,7 +243,7 @@ class TestConditionalRouting:
 
         assert not all_mocks["search_agent"].search_all.called
         assert result["plan"] == []
-        assert result["final_report"]  # summarize 仍应产出报告
+        assert result["report"]  # writer 仍应产出报告
 
 
 # ── 可视化导出测试 ───────────────────────────────────────────────────────
@@ -192,12 +253,12 @@ class TestVisualization:
     """测试 Mermaid 流程图导出。"""
 
     def test_mermaid_export(self, all_mocks):
-        """graph.get_graph().draw_mermaid() 能导出含节点的 Mermaid 文本。"""
         app = build_graph(**all_mocks)
         mermaid = app.get_graph().draw_mermaid()
         assert "supervisor" in mermaid
-        assert "search" in mermaid
-        assert "summarize" in mermaid
+        assert "critic" in mermaid
+        assert "writer" in mermaid
+        assert "planner" in mermaid
 
 
 # ── 报告合成测试 ─────────────────────────────────────────────────────────
@@ -207,12 +268,10 @@ class TestComposeReport:
     """测试 _compose_report 的边界处理。"""
 
     def test_empty_state_produces_placeholder(self):
-        """空 State 应返回占位文案而非抛异常。"""
         report = _compose_report({}, [])
         assert "未检索到论文" in report
 
     def test_report_includes_plan_and_counts(self):
-        """报告应包含研究步骤和论文/评审计数。"""
         state = {
             "plan": ["step1", "step2"],
             "papers": [{"title": "A"}, {"title": "B"}],
@@ -231,7 +290,7 @@ class TestTracingIntegration:
     """测试各节点在 invoke 时产生 LangFuse 调用链埋点。"""
 
     def test_nodes_record_traces(self, all_mocks):
-        """注入 mock 客户端，四个节点应各产生一次 span 埋点。"""
+        """注入 mock 客户端，7 个节点应各产生一次 span 埋点。"""
         from src.observability.tracing import LangfuseTracer
 
         mock_client = MagicMock()
@@ -242,7 +301,5 @@ class TestTracingIntegration:
         app.invoke({"query": "CAR-T therapy for solid tumors"})
 
         names = [c.kwargs["name"] for c in mock_client.start_observation.call_args_list]
-        assert "supervisor" in names
-        assert "search" in names
-        assert "review" in names
-        assert "summarize" in names
+        for node in ("supervisor", "search", "review", "summarize", "critic", "writer", "planner"):
+            assert node in names

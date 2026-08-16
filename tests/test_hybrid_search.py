@@ -12,13 +12,12 @@ import pytest
 
 from src.rag.hybrid_search import (
     BM25Index,
-    HybridRetriever,
     HybridReranker,
+    HybridRetriever,
     mean_reciprocal_rank,
     recall_at_k,
     reciprocal_rank_fusion,
 )
-
 
 # ── BM25 测试 ─────────────────────────────────────────────────────────────
 

@@ -21,7 +21,6 @@ from src.agents.summarizer import (
     PaperSummarizer,
 )
 
-
 # ── Fixtures ───────────────────────────────────────────────────────────────
 
 

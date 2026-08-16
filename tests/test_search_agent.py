@@ -15,7 +15,6 @@ from src.agents.search_agent import (
     normalize_paper,
 )
 
-
 # ── Fixtures：mock 数据源 Tool ───────────────────────────────────────────
 
 

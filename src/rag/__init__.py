@@ -4,6 +4,7 @@ PDF加载 → 文本分块 → 向量嵌入 → ChromaDB存储 → 语义检索
 + 混合检索（BM25 + RRF + BGE-Reranker）
 """
 
+from src.rag.fulltext_loader import FulltextLoader
 from src.rag.hybrid_search import (
     BM25Index,
     HybridReranker,
@@ -16,6 +17,7 @@ from src.rag.rag_pipeline import RAGPipeline
 
 __all__ = [
     "BM25Index",
+    "FulltextLoader",
     "HybridReranker",
     "HybridRetriever",
     "RAGPipeline",

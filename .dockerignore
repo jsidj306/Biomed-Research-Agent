@@ -1,0 +1,17 @@
+# 构建上下文裁剪：避免把本地大文件/密钥/缓存打进镜像
+.venv
+.git
+.github
+__pycache__
+*.pyc
+.pytest_cache
+.ruff_cache
+.coverage
+htmlcov
+data
+docs/demo
+docs/screenshots
+*.mp4
+*.png
+.env
+.env.*

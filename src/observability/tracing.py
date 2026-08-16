@@ -35,7 +35,7 @@ from __future__ import annotations
 
 import logging
 import os
-from typing import Any
+from typing import Any, Self
 
 from dotenv import load_dotenv
 
@@ -85,7 +85,7 @@ class LangfuseTracer:
 
     # ── 公开接口 ────────────────────────────────────────────────────────
 
-    def trace(self, name: str, input_data: dict | None = None) -> "_TraceSpan":
+    def trace(self, name: str, input_data: dict | None = None) -> _TraceSpan:
         """返回节点级追踪的上下文管理器，自动记录耗时。
 
         Args:
@@ -131,7 +131,7 @@ class LangfuseTracer:
                 metadata=metadata,
             )
             obs.end()
-        except Exception as e:  # noqa: BLE001 — 监控降级，绝不影响主流程
+        except Exception as e:
             logger.warning("LangFuse record failed (degraded): %s", e)
 
     def flush(self) -> None:
@@ -140,7 +140,7 @@ class LangfuseTracer:
             return
         try:
             self._client.flush()
-        except Exception as e:  # noqa: BLE001
+        except Exception as e:
             logger.warning("LangFuse flush failed (degraded): %s", e)
 
     # ── 内部实现 ────────────────────────────────────────────────────────
@@ -152,7 +152,7 @@ class LangfuseTracer:
             from langfuse import Langfuse  # 延迟导入，未安装时降级
 
             return Langfuse(public_key=pk, secret_key=sk, host=host)
-        except Exception as e:  # noqa: BLE001
+        except Exception as e:
             logger.warning("LangFuse unavailable, tracing disabled: %s", e)
             return None
 
@@ -167,13 +167,13 @@ class _TraceSpan:
         self._output: dict | None = None
         self._obs = None
 
-    def __enter__(self) -> "_TraceSpan":
+    def __enter__(self) -> Self:
         if self._tracer.enabled:
             try:
                 self._obs = self._tracer._client.start_observation(
                     name=self._name, input=self._input
                 )
-            except Exception as e:  # noqa: BLE001
+            except Exception as e:
                 logger.warning("LangFuse start failed (degraded): %s", e)
         return self
 
@@ -185,7 +185,7 @@ class _TraceSpan:
                     output = {"error": f"{exc_type.__name__}: {exc_val}"}
                 self._obs.update(output=output)
                 self._obs.end()
-            except Exception as e:  # noqa: BLE001
+            except Exception as e:
                 logger.warning("LangFuse end failed (degraded): %s", e)
         return False  # 不吞异常，让主流程照常传播
 

@@ -14,7 +14,6 @@ import pytest
 
 from src.observability.tracing import LangfuseTracer
 
-
 # ── 降级测试 ─────────────────────────────────────────────────────────────
 
 
@@ -96,9 +95,8 @@ class TestTracing:
         """span 内抛异常不应被吞掉，但异常信息应被记录。"""
         tracer = LangfuseTracer(client=mock_client)
 
-        with pytest.raises(ValueError):
-            with tracer.trace("review"):
-                raise ValueError("boom")
+        with pytest.raises(ValueError), tracer.trace("review"):
+            raise ValueError("boom")
 
         # 异常仍被记录到 output
         assert mock_client.start_observation.called

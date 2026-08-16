@@ -9,6 +9,7 @@ Streamlit UI Components — 可复用的论文展示组件。
     render_paper_card(paper, index=1)
 """
 
+import re
 from typing import Any
 
 import streamlit as st
@@ -69,9 +70,11 @@ def render_paper_card(paper: dict[str, Any], index: int = 1) -> None:
             else:
                 st.caption("No abstract available.")
 
-        # ── ID 信息 ──
-        id_label = "PMID" if source == "pubmed" else "Arxiv ID"
-        st.caption(f"{id_label}: `{source_id}`")
+        # ── ID 信息（PMID 可点击跳转 PubMed 原文）──
+        if source == "pubmed" and source_id:
+            st.caption(f"PMID: {build_pmid_link(source_id)}")
+        elif source_id:
+            st.caption(f"{source}: `{source_id}`")
 
 
 def render_paper_list(papers: list[dict[str, Any]], max_display: int = 10) -> None:
@@ -171,6 +174,65 @@ def render_summary_tabs(summary_result: dict[str, Any]) -> None:
         render_detailed_summary(detailed)
     elif summary_type == "key_findings":
         render_key_findings(key_findings)
+
+
+# ── 引用溯源 ──────────────────────────────────────────────────────────
+
+
+def build_pmid_link(pmid: str) -> str:
+    """生成 PMID 的 PubMed 跳转链接（Markdown，纯函数便于测试）。
+
+    Args:
+        pmid: PubMed ID 字符串
+
+    Returns:
+        str — Markdown 链接，空 pmid 返回空串
+    """
+    pmid = str(pmid).strip()
+    if not pmid:
+        return ""
+    return f"[PMID:{pmid}](https://pubmed.ncbi.nlm.nih.gov/{pmid}/)"
+
+
+def _linkify_citations(report: str, papers: list[dict[str, Any]]) -> str:
+    """把报告里的 [n] 引用替换为可点击的 PubMed 链接（纯函数，便于测试）。
+
+    引用的 [n] 编号对应 papers 的 1-based 下标；对应论文有 pmid 时替换为
+    链接，否则保留原样，杜绝「编造引用」。
+
+    Args:
+        report: 报告 Markdown 文本
+        papers: 论文列表（用于 [n] → pmid 映射）
+
+    Returns:
+        str — 替换后的报告文本
+    """
+    if not papers:
+        return report
+
+    def _repl(match: re.Match) -> str:
+        n = int(match.group(1))
+        if 1 <= n <= len(papers):
+            pmid = str(papers[n - 1].get("pmid", "")).strip()
+            if pmid:
+                return f"[{n}](https://pubmed.ncbi.nlm.nih.gov/{pmid}/)"
+        return match.group(0)
+
+    return re.sub(r"\[(\d+)\]", _repl, report)
+
+
+def render_report(report: str, papers: list[dict[str, Any]] | None = None) -> None:
+    """渲染六段式报告，并把 [n] 引用转成可点击的 PubMed 链接。
+
+    Args:
+        report: 报告 Markdown 文本（Writer 产出）
+        papers: 论文列表（用于引用溯源；缺省时不替换引用）
+    """
+    if not report:
+        st.info("No report to display.")
+        return
+    rendered = _linkify_citations(report, papers or [])
+    st.markdown(rendered)
 
 
 # ── 侧边栏配置 ──────────────────────────────────────────────────────────
