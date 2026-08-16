@@ -65,12 +65,16 @@ docker-compose down        # 停止（数据卷保留）
 
 ## 3. HuggingFace Spaces 部署
 
-HuggingFace Spaces 提供免费托管的 Streamlit 环境。方式：**Docker SDK**（推荐，因为
-本项目有自定义 Dockerfile 与中文字体）。
+> ⚠️ **收费变更（2026-07 起）**：HuggingFace 已取消免费层的 `cpu-basic` 实例，
+> **Docker / Gradio / Streamlit SDK 均需 PRO 订阅（$9/月）**；免费层只剩 Static 静态
+> 站点和限制极严的 ZeroGPU。本项目是实时 Streamlit 应用、又依赖 Dockerfile（中文字体
+> + uv），因此**免费部署到 HF Spaces 已不可行**。以下保留「付费 PRO」路径，并给出
+> 免费替代方案。
 
-### 步骤
+### 3.1 方案一：付费 PRO + Docker SDK（$9/月）
 
-1. 访问 [huggingface.co/new-space](https://huggingface.co/new-space)，选择
+1. 订阅 [HuggingFace PRO](https://huggingface.co/settings/billing)（$9/月）。
+2. 访问 [huggingface.co/new-space](https://huggingface.co/new-space)，选择
    **Docker** SDK，空间名如 `biomed-research-agent`。
 2. 克隆空仓库：
 
@@ -90,6 +94,20 @@ HuggingFace Spaces 提供免费托管的 Streamlit 环境。方式：**Docker SD
 
 6. Space 会自动构建 Docker 镜像并启动，构建完成后访问
    `https://YOUR_USERNAME-biomed-research-agent.hf.space`。
+
+### 3.2 方案二：免费替代（无需 HF PRO）
+
+本项目的 Dockerfile 直接可用，找一个「支持任意 Docker 容器」的免费/免费额度平台即可：
+
+| 平台 | 免费额度 | 是否支持 Docker | 注意 |
+|------|---------|----------------|------|
+| **Google Cloud Run** | 每月 200 万请求免费 | ✅ | 冷启动较慢，需绑信用卡但额度内不扣费 |
+| **Render** | 免费 Web Service | ✅ | 512MB RAM 偏小（PubMedBERT 可能吃紧）、闲置 15 分钟休眠 |
+| **Streamlit Community Cloud** | 免费 | ❌（走 `requirements.txt`） | 需补 `requirements.txt` + `packages.txt`，不支持 Dockerfile |
+
+> 若只是「能公网访问 demo」而非长期托管，**Streamlit Community Cloud** 上手最快：
+> 关联 GitHub 仓库 → 选 `src/ui/app.py` 入口 → 在 Secrets 里配 Key。知识图谱/Neo4j
+> 这类依赖外部服务的能力在免费托管上建议关闭或指向远程实例。
 
 ### 注意事项
 
