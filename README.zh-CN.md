@@ -197,6 +197,9 @@ src/
 - 🎬 [V1.0 多 Agent 编排演示（5–8 分钟）](docs/demo/v1_demo.mp4)——Supervisor 派单 →
   5 源并发搜索 → Review 评分 → 摘要输出，含混合检索评测与 LangFuse 追踪。
 - 📝 [从 MiniMind 到 LangGraph——构建生物医学研究 Agent](https://juejin.cn/spost/7673780779483676678)（掘金）
+- 📝 [给 Agent 加一个「挑刺的审稿人」——Critic 与自纠错回环](https://juejin.cn/post/7674130372750295082)（掘金）
+- 📝 [用 LLM + Neo4j 给生物医学文献建知识图谱](https://juejin.cn/post/7674123634785828900)（掘金）
+- 📝 [从研究到可交付产物——报告生成、导出与容器化部署](https://juejin.cn/post/7674130372750360618)（掘金）
 
 ---
 
