@@ -2,6 +2,31 @@
 
 本项目遵循 [语义化版本](https://semver.org/lang/zh-CN/)。所有值得记录的变化都在此文件。
 
+## [2.1.0] - 2026-08-17
+
+### Added
+
+- **MCP Server 封装**（`src/mcp/server.py`）：用 FastMCP 把 `search_papers` /
+  `summarize_paper` / `generate_report` / `query_kg` 四个能力封装为 MCP 工具，
+  供 Claude Desktop / Cursor 直接调用（stdio 传输）；附 `.cursor/mcp.json`、
+  `docs/mcp/claude_desktop_config.json` 配置示例与接入指南（`docs/mcp/README.md`）。
+- **MiniMind LoRA 微调实验**（`src/finetune/minimind_model.py` + `train_lora_local.py` +
+  `src/finetune/data.py`）：在实验课产出的本地 MiniMind 权重（2 层 / 12M，
+  `pretrain_512.pth`，纯 `.pth` 离线加载，无外部下载）上手动实现 LoRA 微调生物医学
+  指令数据；确定性生成 800 条「药物-靶点-疾病」指令（8:1:1 划分，
+  `scripts/generate_biomed_instruct.py`）；实测验证集困惑度 **156 → 6.72（-95.7%）**，
+  同时诚实记录「2 层模型容量不足、生成仍不连贯」的负面结论。附
+  `tests/test_biomed_data.py`、`tests/test_minimind_model.py`、
+  `scripts/eval_minimind_compare.py` 与实验记录 `docs/minimind_lora_experiment.md`。
+- **多语言支持**（`src/ui/i18n.py`）：UI 文案中英双语字典 + `t(lang, key)` 纯函数，
+  `render_sidebar` 新增语言切换，界面语言由 `st.session_state.lang` 控制。
+- **CNKI/万方检索**（`src/tools/cnki_tool.py`）：中文文献搜索工具，经 ChinaXiv
+  OAI-PMH 开放接口收割中文预印本文献（CNKI/万方无公开 API），客户端按查询词过滤
+  排序，统一返回与 PubMed/arXiv 一致的 schema；已接入 UI 检索数据源。
+- **中文 RAG**（`src/rag/embeddings.py`）：新增 `BAAI/bge-small-zh-v1.5` 中文嵌入
+  模型（`bge_zh`），`embed_query` 侧自动加检索指令前缀。
+- **多语言测试**：新增 `tests/test_i18n.py` + `tests/test_cnki_tool.py`（共 23 个用例）。
+
 ## [2.0.0] - 2026-08-17
 
 ### Added

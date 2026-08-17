@@ -6,12 +6,14 @@ LangChain BaseTool wrappers for biomedical literature search APIs.
 
 from src.tools.arxiv_tool import ArxivSearchTool
 from src.tools.biorxiv_tool import BioRxivSearchTool, MedRxivSearchTool
+from src.tools.cnki_tool import CNKISearchTool
 from src.tools.pubmed_tool import PubMedSearchTool
 from src.tools.semantic_scholar_tool import SemanticScholarSearchTool
 
 __all__ = [
     "ArxivSearchTool",
     "BioRxivSearchTool",
+    "CNKISearchTool",
     "MedRxivSearchTool",
     "PubMedSearchTool",
     "SemanticScholarSearchTool",

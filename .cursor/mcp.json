@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "biomed-research-agent": {
+      "command": "uv",
+      "args": ["run", "python", "src/mcp/server.py"]
+    }
+  }
+}

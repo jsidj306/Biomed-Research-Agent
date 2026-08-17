@@ -18,6 +18,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 sys.stdout.reconfigure(encoding='utf-8')
 
 from langchain_core.documents import Document
+
 from src.tools.pubmed_tool import PubMedSearchTool
 
 

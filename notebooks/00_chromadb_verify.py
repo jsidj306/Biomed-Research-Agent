@@ -1,9 +1,11 @@
 """Step 4.2 — ChromaDB verification script"""
 import sys
+
 sys.stdout.reconfigure(encoding='utf-8')
 
-import chromadb
 import os
+
+import chromadb
 
 chroma_path = os.path.join(os.path.dirname(__file__), "..", "data", "chroma_test")
 chroma_path = os.path.abspath(chroma_path)

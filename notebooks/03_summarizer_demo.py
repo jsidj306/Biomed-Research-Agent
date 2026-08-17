@@ -16,9 +16,9 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 sys.stdout.reconfigure(encoding='utf-8')
 
-from src.tools.pubmed_tool import PubMedSearchTool
-from src.tools.arxiv_tool import ArxivSearchTool
 from src.agents.summarizer import PaperSummarizer
+from src.tools.arxiv_tool import ArxivSearchTool
+from src.tools.pubmed_tool import PubMedSearchTool
 
 
 def print_separator(title: str):

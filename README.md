@@ -92,6 +92,7 @@ graph LR
 - 📦 **Report export** — Markdown / PDF / Word, plus BibTeX.
 - 📈 **Observability** — LangFuse tracing of the whole agent call chain.
 - 🐳 **Docker** — reproducible 3-service stack.
+- 🔌 **MCP server** — search / summarize / report / knowledge-graph exposed as MCP tools for Claude Desktop &amp; Cursor.
 
 ---
 
@@ -183,6 +184,24 @@ export_report(report, "out/report.md", fmt="markdown")
 export_report(report, "out/report.docx", fmt="docx")
 export_report(report, "out/report.pdf", fmt="pdf")
 ```
+
+---
+
+## MCP integration
+
+The research assistant's capabilities are exposed as MCP tools for Claude Desktop / Cursor:
+
+- 🔍 `search_papers` — multi-source literature search
+- 📝 `summarize_paper` — structured single-paper summary
+- 📊 `generate_report` — full 7-agent pipeline (six-section report + directions)
+- 🕸️ `query_kg` — knowledge-graph triple extraction
+
+```bash
+uv run python src/mcp/server.py    # start the stdio MCP server
+```
+
+Cursor projects ship with `.cursor/mcp.json`; see [docs/mcp/README.md](docs/mcp/README.md)
+for the Claude Desktop config example and full setup.
 
 ---
 

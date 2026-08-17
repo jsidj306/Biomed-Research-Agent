@@ -1,14 +1,17 @@
 """Step 4.4 — RAG Minimal Demo: Search -> Store -> Retrieve -> AI Answer"""
 import sys
+
 sys.stdout.reconfigure(encoding='utf-8')
 
 import os
+
 from dotenv import load_dotenv
+
 env_path = os.path.join(os.path.dirname(__file__), "..", ".env")
 load_dotenv(env_path)
 
-from Bio import Entrez
 import chromadb
+from Bio import Entrez
 from openai import OpenAI
 
 # ===== Config =====
@@ -48,7 +51,7 @@ for pid in paper_ids:
     print(f"  PMID {pid}: {title[:80]}...")
 
 # ===== Step 2: Store in ChromaDB =====
-print(f"\n[2/4] Storing in ChromaDB...")
+print("\n[2/4] Storing in ChromaDB...")
 client = chromadb.PersistentClient(path=chroma_path)
 collection = client.get_or_create_collection(name="demo_rag")
 
@@ -58,7 +61,7 @@ collection.add(documents=documents, ids=ids)
 print(f"  Stored {len(documents)} papers")
 
 # ===== Step 3: Retrieve =====
-print(f"\n[3/4] Retrieving relevant context...")
+print("\n[3/4] Retrieving relevant context...")
 results = collection.query(query_texts=[QUERY], n_results=3)
 context_parts = []
 for i, (doc, dist) in enumerate(zip(results["documents"][0], results["distances"][0])):
@@ -68,7 +71,7 @@ for i, (doc, dist) in enumerate(zip(results["documents"][0], results["distances"
 context = "\n\n---\n\n".join(context_parts)
 
 # ===== Step 4: Generate Answer =====
-print(f"\n[4/4] Generating answer via LLM...")
+print("\n[4/4] Generating answer via LLM...")
 prompt = f"""You are a biomedical research assistant. Answer the question based ONLY on the provided paper abstracts.
 
 Context:
@@ -96,4 +99,4 @@ print("Sources:")
 for p in papers:
     print(f"  - PMID {p['id']}: {p['title']}")
 
-print(f"\n=== RAG Pipeline Complete! ===")
+print("\n=== RAG Pipeline Complete! ===")

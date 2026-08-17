@@ -17,9 +17,9 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 sys.stdout.reconfigure(encoding='utf-8')
 
-from src.tools.pubmed_tool import PubMedSearchTool
-from src.tools.arxiv_tool import ArxivSearchTool
 from src.agents.summarizer import PaperSummarizer
+from src.tools.arxiv_tool import ArxivSearchTool
+from src.tools.pubmed_tool import PubMedSearchTool
 
 
 def print_separator(title: str):
@@ -154,7 +154,7 @@ def test_3_full_pipeline():
             for j, f in enumerate(kf["findings"], 1):
                 print(f"  {j}. {f}")
 
-    print(f"\n[OK] Step 3 PASSED — Full pipeline verified")
+    print("\n[OK] Step 3 PASSED — Full pipeline verified")
     return True
 
 
@@ -200,7 +200,7 @@ def test_4_multi_source_merge():
         assert "abstract" in p or "summary" in p
         assert "source" in p
 
-    print(f"\n[OK] Step 4 PASSED — Multi-source merge works correctly")
+    print("\n[OK] Step 4 PASSED — Multi-source merge works correctly")
     return True
 
 

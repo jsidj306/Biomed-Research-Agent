@@ -46,9 +46,9 @@ def main() -> None:
     retriever = HybridRetriever(corpus_texts)  # 不加载重排模型，纯 RRF 融合
 
     # 三种检索策略（同一评测集、同一语料）
-    hybrid_fn = lambda q: _indices(retriever.search(q, ranker.rank, k=10))       # noqa: E731
-    bm25_fn = lambda q: [i for i, _ in retriever.bm25.search(q, k=10)]           # noqa: E731
-    semantic_fn = lambda q: ranker.rank(q, k=10)                                  # noqa: E731
+    hybrid_fn = lambda q: _indices(retriever.search(q, ranker.rank, k=10))
+    bm25_fn = lambda q: [i for i, _ in retriever.bm25.search(q, k=10)]
+    semantic_fn = lambda q: ranker.rank(q, k=10)
 
     rows = {
         "BM25-only": (
@@ -76,7 +76,7 @@ def main() -> None:
     print("-" * 64)
 
     hybrid_mrr, hybrid_recall = rows["混合 (BM25+RRF)"]
-    print(f"\n验收线: MRR > 0.70, Recall@10 > 0.85")
+    print("\n验收线: MRR > 0.70, Recall@10 > 0.85")
     print(
         f"结论: {'✅ 达标' if hybrid_mrr > 0.70 and hybrid_recall > 0.85 else '❌ 未达标，需调优'}"
     )

@@ -82,6 +82,7 @@ graph LR
 - 📦 **报告导出**——Markdown / PDF / Word + BibTeX。
 - 📈 **可观测性**——LangFuse 追踪整条 Agent 调用链。
 - 🐳 **Docker**——可复现的三服务部署。
+- 🔌 **MCP 服务**——把检索 / 摘要 / 报告 / 知识图谱封装为 MCP 工具，供 Claude Desktop / Cursor 直接调用。
 
 ---
 
@@ -173,6 +174,24 @@ export_report(report, "out/report.md", fmt="markdown")
 export_report(report, "out/report.docx", fmt="docx")
 export_report(report, "out/report.pdf", fmt="pdf")
 ```
+
+---
+
+## MCP 接入
+
+把研究助手的能力封装为 MCP 工具，供 Claude Desktop / Cursor 直接调用：
+
+- 🔍 `search_papers`——多源并行检索文献
+- 📝 `summarize_paper`——单篇论文结构化摘要
+- 📊 `generate_report`——完整 7-Agent 流水线（六段式报告 + 研究方向）
+- 🕸️ `query_kg`——抽取知识图谱三元组
+
+```bash
+uv run python src/mcp/server.py    # 启动 stdio MCP 服务
+```
+
+Cursor 项目已自带 `.cursor/mcp.json`；Claude Desktop 配置示例与完整说明见
+[docs/mcp/README.md](docs/mcp/README.md)。
 
 ---
 

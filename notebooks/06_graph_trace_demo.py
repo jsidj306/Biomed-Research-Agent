@@ -26,8 +26,8 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 sys.stdout.reconfigure(encoding="utf-8")
 
-from src.agents.graph import build_graph  # noqa: E402
-from src.observability.tracing import LangfuseTracer  # noqa: E402
+from src.agents.graph import build_graph
+from src.observability.tracing import LangfuseTracer
 
 QUERY = "CAR-T cell therapy for CD19-positive leukemia"
 

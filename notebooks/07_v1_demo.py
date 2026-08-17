@@ -138,11 +138,11 @@ def main() -> None:
     ranker = TfidfSemanticRanker(corpus)
     retriever = HybridRetriever(corpus)
     eval_set = build_eval_set()
-    search_fn = lambda q: [r["index"] for r in retriever.search(q, ranker.rank, k=10)]  # noqa: E731
+    search_fn = lambda q: [r["index"] for r in retriever.search(q, ranker.rank, k=10)]
     mrr = mean_reciprocal_rank(eval_set, search_fn)
     recall = recall_at_k(eval_set, search_fn)
     print(f"  混合检索（BM25 + 语义 + RRF）:  MRR={mrr:.3f} / Recall@10={recall:.3f}")
-    print(f"  LangFuse: 以上每个场景都已埋点，退出后到后台看节点火焰图。")
+    print("  LangFuse: 以上每个场景都已埋点，退出后到后台看节点火焰图。")
     pause()
 
     # ── 场景 7：收尾 ───────────────────────────────────────────────

@@ -12,6 +12,7 @@ Biomedical Embeddings — 生物医学领域嵌入模型封装。
 备选模型:
 - BioLinkBERT: michiyasunaga/BioLinkBERT-base（知识图谱增强）
 - BioBERT: dmis-lab/biobert-v1.1
+- bge-zh: BAAI/bge-small-zh-v1.5（中文检索，查询需加检索指令前缀）
 """
 
 import logging
@@ -26,7 +27,11 @@ _MODEL_REGISTRY = {
     "biolinkbert": "michiyasunaga/BioLinkBERT-base",
     "biobert": "dmis-lab/biobert-v1.1",
     "pubmedbert_scifact": "pritamdeka/S-PubMedBert-MS-MARCO-SCIFACT",
+    "bge_zh": "BAAI/bge-small-zh-v1.5",
 }
+
+# BGE 中文模型在检索任务中需在查询侧加前缀指令（论文/官方推荐用法）
+_BGE_ZH_QUERY_INSTRUCTION = "为这个句子生成表示以用于检索相关文章："
 
 
 class BiomedicalEmbeddings:
@@ -47,13 +52,15 @@ class BiomedicalEmbeddings:
         """初始化嵌入模型。
 
         Args:
-            model_name: 模型简称 ("pubmedbert" / "biolinkbert" / "biobert")
+            model_name: 模型简称 ("pubmedbert" / "biolinkbert" / "biobert" / "bge_zh")
                         或完整的 HuggingFace 模型 ID
             device:     运行设备 ("cpu" / "cuda")
         """
         # 解析简称 → 完整模型 ID
         resolved = _MODEL_REGISTRY.get(model_name, model_name)
         self.model_name = resolved
+        # BGE 中文模型在 embed_query 侧需加检索指令前缀
+        self._use_bge_instruction = model_name == "bge_zh"
 
         logger.info("Loading embedding model: %s (device=%s)", resolved, device)
 
@@ -84,6 +91,8 @@ class BiomedicalEmbeddings:
             query: 用户查询文本
 
         Returns:
-            List[float] — 768 维查询向量
+            List[float] — 查询向量
         """
+        if self._use_bge_instruction:
+            query = _BGE_ZH_QUERY_INSTRUCTION + query
         return self.embedding_model.embed_query(query)
