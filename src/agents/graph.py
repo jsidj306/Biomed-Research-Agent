@@ -62,6 +62,8 @@ class AgentState(TypedDict, total=False):
         critic_retries: Critic 已执行的返工轮数
         report:        最终六段式报告（Writer 生成）
         directions:    研究方向推荐（Planner 生成）
+        document_text: 本地文档全文（可选，来自本地 PDF，作为首要证据）
+        document_title: 本地文档标题（可选）
     """
 
     query: str
@@ -76,6 +78,8 @@ class AgentState(TypedDict, total=False):
     critic_retries: int
     report: str
     directions: list[dict]
+    document_text: str
+    document_title: str
 
 
 # ── 条件路由 ────────────────────────────────────────────────────────────
@@ -180,6 +184,7 @@ def build_graph(
         logger.info("[search] searching multi-source: %s", query[:60])
         with tracer.trace("search", {"query": query}) as span:
             papers = search_agent.search_all(query)
+            papers = _merge_local_document(state, papers)
             span.set_output({"n_papers": len(papers)})
         return {"papers": papers}
 
@@ -274,6 +279,40 @@ def build_graph(
 
 
 # ── 辅助函数 ────────────────────────────────────────────────────────────
+
+
+def _merge_local_document(state: AgentState, papers: list[dict]) -> list[dict]:
+    """把本地文档全文作为「第 1 篇证据」并入检索结果。
+
+    当 state 含 document_text 时，构造一个 source=local_pdf 的伪论文 prepend 到
+    检索结果前，让下游 review/summarize/writer/planner 把它当首要证据处理。
+    fulltext 字段携带全文（供 Writer/Planner 用更长上下文），abstract 字段存
+    摘要级节选（供 review/summarize 快速评分/摘要）。
+
+    Args:
+        state:  当前共享状态（可能含 document_text / document_title）
+        papers: 检索结果论文列表
+
+    Returns:
+        List[dict] — 本地文档（若有）+ 检索结果的论文列表
+    """
+    text = (state.get("document_text") or "").strip()
+    if not text:
+        return papers
+
+    paper = {
+        "title": state.get("document_title") or "本地文档",
+        "authors": [],
+        "journal": "本地文档 (local PDF)",
+        "year": "",
+        "abstract": text[:3000],
+        "fulltext": text,
+        "url": "",
+        "source": "local_pdf",
+        "doi": "",
+        "pmid": "",
+    }
+    return [paper] + papers
 
 
 def _compose_report(state: AgentState, summaries: Any) -> str:

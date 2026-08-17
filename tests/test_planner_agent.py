@@ -145,6 +145,24 @@ class TestDegradation:
         assert planner.generate_directions(gaps, papers) == []
 
 
+# ── papers 格式化测试 ────────────────────────────────────────────────────
+
+
+class TestFormatPapers:
+    """测试 papers 格式化对本地文档 fulltext 的优先使用。"""
+
+    def test_fulltext_preferred_over_abstract(self):
+        paper = {"title": "Local", "fulltext": "Z" * 2500, "source": "local_pdf"}
+        text = PlannerAgent._format_papers([paper])
+        assert "Z" * 2500 in text
+
+    def test_no_fulltext_uses_abstract_truncated(self):
+        paper = {"title": "P", "abstract": "W" * 500}
+        text = PlannerAgent._format_papers([paper])
+        assert "W" * 200 in text
+        assert "W" * 500 not in text  # 无 fulltext 时仍截断到 200
+
+
 # ── Prompt 模板测试 ──────────────────────────────────────────────────────
 
 

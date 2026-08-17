@@ -27,6 +27,7 @@ from pydantic import BaseModel, Field
 from tenacity import (
     before_sleep_log,
     retry,
+    retry_if_exception,
     stop_after_attempt,
     wait_exponential,
 )
@@ -37,6 +38,24 @@ logger = logging.getLogger(__name__)
 
 _BASE_URL = "https://api.semanticscholar.org/graph/v1/paper/search"
 _FIELDS = "title,authors,year,venue,abstract,externalIds,url,citationCount"
+
+
+def _is_retryable(exc: BaseException) -> bool:
+    """判断异常是否值得重试。
+
+    - 4xx（含 429 限流）：客户端错误，重试无意义——限流在 2/4/10 秒内不会恢复，
+      应立即降级，避免演示/调用被指数退避「看起来卡死」
+    - 5xx / 连接错误 / 超时：服务端或网络临时故障，值得指数退避重试
+
+    Args:
+        exc: 抛出的异常
+
+    Returns:
+        bool — True 表示重试，False 表示立即放弃
+    """
+    if isinstance(exc, requests.HTTPError) and exc.response is not None:
+        return exc.response.status_code >= 500
+    return True
 
 
 # ── Pydantic Input Schema ──────────────────────────────────────────────
@@ -118,6 +137,7 @@ class SemanticScholarSearchTool(BaseTool):
     # ── 核心搜索逻辑 ──────────────────────────────────────────────────
 
     @retry(
+        retry=retry_if_exception(_is_retryable),
         stop=stop_after_attempt(3),
         wait=wait_exponential(multiplier=1, min=2, max=10),
         before_sleep=before_sleep_log(logger, logging.WARNING),

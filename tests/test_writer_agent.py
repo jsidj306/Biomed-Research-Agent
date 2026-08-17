@@ -146,6 +146,24 @@ class TestWriteReport:
         assert "未检索到论文" in report
 
 
+# ── Evidence 组装测试 ────────────────────────────────────────────────────
+
+
+class TestFormatEvidence:
+    """测试 evidence 组装对本地文档 fulltext 的优先使用。"""
+
+    def test_fulltext_preferred_over_abstract(self):
+        paper = {"title": "Local", "fulltext": "X" * 5000, "source": "local_pdf"}
+        evidence = WriterAgent._format_evidence([paper], [])
+        assert "X" * 5000 in evidence
+
+    def test_no_fulltext_uses_abstract_truncated(self):
+        paper = {"title": "P", "abstract": "Y" * 1000}
+        evidence = WriterAgent._format_evidence([paper], [])
+        assert "Y" * 500 in evidence
+        assert "Y" * 1000 not in evidence  # 无 fulltext 时仍截断到 500
+
+
 # ── 常量测试 ─────────────────────────────────────────────────────────────
 
 

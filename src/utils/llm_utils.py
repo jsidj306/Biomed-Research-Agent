@@ -144,6 +144,9 @@ def create_chat_model(
         "temperature": _normalize_temperature(model_name, temperature),
         "api_key": api_key,
         "base_url": base_url,
+        # 单次调用超时（秒）。默认走底层 openai 客户端的 600s，API 挂起时整条
+        # 流水线会「一动不动」卡满 10 分钟；显式收紧到 180s，卡住也能快速失败重试。
+        "request_timeout": 180,
     }
     if _is_native_openai(model_name):
         kwargs["max_tokens"] = max_tokens

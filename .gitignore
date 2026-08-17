@@ -24,6 +24,9 @@ data/papers/
 # Demo/export artifacts (generated during run/demo)
 out/
 
+# 原始录屏（大文件不入库，只提交 *_part*.mp4 压缩版）
+docs/demo/*(*).mp4
+
 # IDE
 .vscode/
 .idea/

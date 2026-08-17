@@ -165,7 +165,9 @@ class PlannerAgent:
         lines = []
         for i, p in enumerate(papers, 1):
             title = p.get("title") or f"Paper {i}"
-            abstract = (p.get("abstract") or "")[:max_abstract]
+            fulltext = p.get("fulltext")
+            # 本地文档全文给更长上下文，检索结果仍按 max_abstract 截断
+            abstract = fulltext[:3000] if fulltext else (p.get("abstract") or "")[:max_abstract]
             lines.append(f"[{i}] {title}\n    {abstract}")
         return "\n".join(lines)
 

@@ -225,7 +225,11 @@ class WriterAgent:
         lines = []
         for i, paper in enumerate(papers, 1):
             title = paper.get("title") or f"Paper {i}"
-            abstract = (paper.get("abstract") or "")[:500]
+            fulltext = paper.get("fulltext")
+            if fulltext:
+                abstract = fulltext[:6000]  # 本地文档全文，给更长上下文
+            else:
+                abstract = (paper.get("abstract") or "")[:500]
             lines.append(f"[{i}] {title}\n    {abstract}")
             # 若已有该论文的摘要结果，一并作为 evidence
             if isinstance(summaries, list) and i - 1 < len(summaries):

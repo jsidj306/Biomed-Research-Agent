@@ -14,6 +14,7 @@ import pytest
 from src.agents.graph import (
     AgentState,
     _compose_report,
+    _merge_local_document,
     build_graph,
     route_after_critic,
     route_after_supervisor,
@@ -259,6 +260,46 @@ class TestVisualization:
         assert "critic" in mermaid
         assert "writer" in mermaid
         assert "planner" in mermaid
+
+
+# ── 本地文档接入测试 ─────────────────────────────────────────────────────
+
+
+class TestLocalDocument:
+    """测试本地 PDF 全文接入流水线（_merge_local_document）。"""
+
+    def test_no_document_returns_papers_unchanged(self):
+        papers = [{"title": "A", "source": "pubmed"}]
+        assert _merge_local_document({}, papers) == papers
+
+    def test_blank_document_ignored(self):
+        papers = [{"title": "A"}]
+        assert _merge_local_document({"document_text": "   "}, papers) == papers
+
+    def test_document_prepended_as_local_pdf(self):
+        fulltext = "x" * 2000
+        papers = [{"title": "A", "source": "pubmed"}]
+        merged = _merge_local_document(
+            {"document_text": fulltext, "document_title": "BCI Paper"},
+            papers,
+        )
+        assert merged[0]["source"] == "local_pdf"
+        assert merged[0]["title"] == "BCI Paper"
+        assert merged[0]["fulltext"] == fulltext
+        assert merged[0]["abstract"] == fulltext  # 2000 < 3000 截断上限，等于全文
+        assert len(merged) == 2
+
+    def test_invoke_with_local_document(self, all_mocks):
+        """invoke 传入 document_text 时，本地文档应成为 papers 的第 1 篇。"""
+        app = build_graph(**all_mocks)
+        result = app.invoke({
+            "query": "query",
+            "document_text": "full text " * 100,
+            "document_title": "My BCI Paper",
+        })
+        assert result["papers"][0]["source"] == "local_pdf"
+        assert result["papers"][0]["title"] == "My BCI Paper"
+        assert len(result["papers"]) == 3  # 本地文档 + 2 篇 mock 检索结果
 
 
 # ── 报告合成测试 ─────────────────────────────────────────────────────────

@@ -14,13 +14,14 @@ V2.0 演示脚本（一键跑通 6 个场景，用于录屏）。
 
 注意:
   - 场景 2/5 会真实调 LLM 与 PubMed，需 .env 里 OPENAI_API_KEY / NCBI_API_KEY 有效
-  - 场景 4 需要一份文字版 PDF，把顶部 PDF_PATH 改成你的文件路径
+  - 场景 4/5 需要一份文字版 PDF，把顶部 PDF_PATH 改成你的文件路径（场景 5 会读全文作为首要证据）
   - 场景 5 的 PDF 导出：本地需 pandoc 3.x + typst（winget 安装）或 Docker 内
     weasyprint，后端缺失时会打印友好提示而非崩溃
 """
 
 from __future__ import annotations
 
+import logging
 import sys
 from pathlib import Path
 
@@ -29,6 +30,17 @@ from pathlib import Path
 for _stream in (sys.stdout, sys.stderr):
     if hasattr(_stream, "reconfigure"):
         _stream.reconfigure(encoding="utf-8")
+
+# 让各 Agent 节点的 logger.info 进度打印到终端。默认 logging 无 handler + WARNING 级别，
+# 全链路 invoke 期间会「一片寂静」，误以为卡死；这里显式打开 INFO 并降噪第三方库。
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s [%(levelname)s] %(message)s",
+    datefmt="%H:%M:%S",
+)
+for _noisy in ("httpx", "httpcore", "openai", "langchain", "langchain_core",
+               "langchain_openai", "urllib3", "tenacity"):
+    logging.getLogger(_noisy).setLevel(logging.WARNING)
 
 # 直接 `python notebooks/08_v2_demo.py` 运行时，Python 只把 notebooks/ 加入 sys.path，
 # 导致 `from src...` 找不到模块；把项目根目录前置，保证任意目录下都能跑。
@@ -46,8 +58,8 @@ from src.report.export import export_report
 
 # ── 可调参数 ─────────────────────────────────────────────────────────────
 
-QUERY = "CAR-T therapy for solid tumors"
-PDF_PATH = "data/papers/demo.pdf"   # 场景 4 用：改成你备好的文字版 PDF 路径
+QUERY = "brain-computer interface decoding algorithm"
+PDF_PATH = "data/papers/demo.pdf"   # 场景 4/5 用：改成你备好的文字版 PDF 路径（场景 5 会读它的全文）
 
 # ── 工具函数 ─────────────────────────────────────────────────────────────
 
@@ -63,6 +75,15 @@ def pause() -> None:
         input("\n  ⏸  按回车继续下一场景... ")
     except EOFError:
         pass
+
+
+def extract_title(text: str, fallback: str = "本地文档") -> str:
+    """从 PDF 全文开头提取一个可读标题（取首个非空短行），失败回退文件名。"""
+    for line in text.splitlines():
+        line = line.strip()
+        if line and len(line) <= 120:
+            return line
+    return fallback
 
 
 # ── 场景 1：7-Agent 流程图 ───────────────────────────────────────────────
@@ -131,9 +152,28 @@ class FastSearchAgent(SearchAgent):
         return super().search_all(query, max_results=max_results)
 
 
+# 把本地 demo.pdf 全文接进流水线：全文作为「第 1 篇证据」，报告基于它生成。
+# 读不到 PDF 就降级为纯检索模式，不中断录屏。
+document_text = ""
+document_title = Path(PDF_PATH).name
+if Path(PDF_PATH).exists():
+    try:
+        docs = FulltextLoader().load(str(PDF_PATH))
+        document_text = docs[0].page_content
+        document_title = extract_title(document_text, fallback=Path(PDF_PATH).name)
+        print(f"✅ 已读取本地文档全文：{document_title}（{len(document_text)} 字符）")
+    except Exception as exc:
+        print(f"⚠️  本地 PDF 读取失败（{exc}），降级为纯检索模式")
+else:
+    print(f"⚠️  未找到 {PDF_PATH}，降级为纯检索模式（报告仅基于检索结果）")
+
 demo_app = build_graph(search_agent=FastSearchAgent())
-print(f"开始全链路（query: {QUERY}）... 真实检索 + 7 Agent，约 1-2 分钟")
-result = demo_app.invoke({"query": QUERY})
+print(f"开始全链路（query: {QUERY}，本地文档: {document_title}）... 真实检索 + 7 Agent，约 1-2 分钟")
+result = demo_app.invoke({
+    "query": QUERY,
+    "document_text": document_text,
+    "document_title": document_title,
+})
 
 report = result["report"]
 directions = result["directions"]
