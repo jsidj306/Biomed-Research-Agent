@@ -2,7 +2,7 @@
 
 本项目遵循 [语义化版本](https://semver.org/lang/zh-CN/)。所有值得记录的变化都在此文件。
 
-## [2.0.0] - 2026-08-16
+## [2.0.0] - 2026-08-17
 
 ### Added
 
@@ -27,6 +27,9 @@
 - **Docker**：多阶段 `Dockerfile` + `docker-compose.yml` 三服务编排（app + chroma + neo4j）。
 - **文档**：重写 README（中英双语）、`docs/architecture.md`、`docs/deployment.md`、
   `docs/CONTRIBUTING.md`。
+- **演示资产**：V2.0 演示录屏（`docs/demo/v2_demo_part1.mp4` / `part2.mp4`，压缩后
+  合计 36 MB）+ 6 张演示截图（`docs/screenshots/`：流程图 / 知识图谱 / Critic 评分 /
+  报告导出 / Docker 部署 / 测试覆盖率）。
 
 ### Changed
 
