@@ -212,7 +212,7 @@ PubMed "CRISPR cancer" (3420篇)
 #### 博客发布记录
 
 - 2026-08-14 已发布到掘金：**从 MiniMind 到 LangGraph——构建生物医学研究 Agent**
-  - 链接：https://juejin.cn/spost/7673780779483676678
+  - 链接：https://juejin.cn/post/7673780779483676678
   - 同步挂到 `README.md`「技术博客」小节。
 - 2026-08-16 已发布到掘金：**给 Agent 加一个「挑刺的审稿人」——Critic 与自纠错回环**
   - 链接：https://juejin.cn/post/7674130372750295082

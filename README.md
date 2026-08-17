@@ -245,10 +245,11 @@ src/
 - 🎬 [V1.0 multi-agent demo (5–8 min)](docs/demo/v1_demo.mp4) — Supervisor dispatch → 5-source
   concurrent search → review scoring → summarization, with hybrid retrieval eval and LangFuse
   tracing.
-- 📝 [From MiniMind to LangGraph — building a biomedical research agent](https://juejin.cn/spost/7673780779483676678) (掘金)
+- 📝 [From MiniMind to LangGraph — building a biomedical research agent](https://juejin.cn/post/7673780779483676678) (掘金)
 - 📝 [Adding a picky reviewer to an agent — the Critic and self-correction loop](https://juejin.cn/post/7674130372750295082) (掘金)
 - 📝 [Building a biomedical knowledge graph with LLM + Neo4j](https://juejin.cn/post/7674123634785828900) (掘金)
 - 📝 [From research to deliverable — report generation, export, and containerization](https://juejin.cn/post/7674130372750360618) (掘金)
+- 📝 [Back to square one — LoRA fine-tuning a 12M MiniMind: perplexity down 95.7%, so what?](https://juejin.cn/post/7674961083938226212) (掘金)
 
 ---
 
