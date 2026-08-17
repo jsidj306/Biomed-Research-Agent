@@ -85,6 +85,25 @@ graph LR
 
 ---
 
+## 截图展示
+
+<table>
+  <tr>
+    <td width="50%"><img src="docs/screenshots/流程图.png" alt="7-Agent 流水线" width="100%"/><br/><em>7-Agent 流水线</em></td>
+    <td width="50%"><img src="docs/screenshots/知识图谱.png" alt="Neo4j 知识图谱" width="100%"/><br/><em>Neo4j 知识图谱（药物-靶点-疾病）</em></td>
+  </tr>
+  <tr>
+    <td width="50%"><img src="docs/screenshots/Critic评分.png" alt="Critic 评分" width="100%"/><br/><em>Critic 评分与自纠错</em></td>
+    <td width="50%"><img src="docs/screenshots/导出报告.png" alt="报告导出" width="100%"/><br/><em>报告导出（Markdown / PDF / Word）</em></td>
+  </tr>
+  <tr>
+    <td width="50%"><img src="docs/screenshots/Docker部署.png" alt="Docker 部署" width="100%"/><br/><em>Docker 三服务部署</em></td>
+    <td width="50%"><img src="docs/screenshots/覆盖率.png" alt="测试覆盖率" width="100%"/><br/><em>测试覆盖率报告</em></td>
+  </tr>
+</table>
+
+---
+
 ## 快速开始
 
 ### 方式 A —— Docker（推荐）

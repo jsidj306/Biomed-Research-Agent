@@ -95,6 +95,25 @@ graph LR
 
 ---
 
+## Screenshots
+
+<table>
+  <tr>
+    <td width="50%"><img src="docs/screenshots/流程图.png" alt="7-agent pipeline" width="100%"/><br/><em>7-agent pipeline</em></td>
+    <td width="50%"><img src="docs/screenshots/知识图谱.png" alt="Neo4j knowledge graph" width="100%"/><br/><em>Neo4j knowledge graph (drug–target–disease)</em></td>
+  </tr>
+  <tr>
+    <td width="50%"><img src="docs/screenshots/Critic评分.png" alt="Critic scoring" width="100%"/><br/><em>Critic scoring &amp; self-correction</em></td>
+    <td width="50%"><img src="docs/screenshots/导出报告.png" alt="Report export" width="100%"/><br/><em>Report export (Markdown / PDF / Word)</em></td>
+  </tr>
+  <tr>
+    <td width="50%"><img src="docs/screenshots/Docker部署.png" alt="Docker deployment" width="100%"/><br/><em>Docker three-service deployment</em></td>
+    <td width="50%"><img src="docs/screenshots/覆盖率.png" alt="Test coverage" width="100%"/><br/><em>Test coverage report</em></td>
+  </tr>
+</table>
+
+---
+
 ## Quick Start
 
 ### Option A — Docker (recommended)
