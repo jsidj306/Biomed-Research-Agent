@@ -72,8 +72,8 @@ def parse_json_response(content: str) -> dict[str, Any]:
 
 # ── 服务商路由 ─────────────────────────────────────────────────────────
 
-# 模型名前缀 → (base_url, API key 环境变量)。项目从「API2D 单一中转」切换到
-# 「多厂商直连」：主审用智谱 GLM、交叉验证用月之暗面 Kimi，各自独立网关与 key。
+# 模型名前缀 → (base_url, API key 环境变量)。主审用智谱 GLM、
+# 交叉验证用月之暗面 Kimi，各自独立网关与 key。
 _PROVIDERS: tuple[tuple[str, str, str], ...] = (
     ("glm", "https://open.bigmodel.cn/api/paas/v4", "ZHIPU_API_KEY"),
     ("kimi", "https://api.moonshot.cn/v1", "MOONSHOT_API_KEY"),
@@ -82,7 +82,7 @@ _PROVIDERS: tuple[tuple[str, str, str], ...] = (
 
 # 原生 OpenAI 模型前缀：仅这些模型才需要 langchain-openai 把 max_tokens 改写为
 # max_completion_tokens（OpenAI 2024-09 的弃用改法）。第三方厂商的 OpenAI 兼容
-# 网关（智谱 / Kimi / Claude 中转）只认 max_tokens，传 max_completion_tokens 会报
+# 网关（智谱 / Kimi 等）只认 max_tokens，传 max_completion_tokens 会报
 # "max_completion_tokens: Extra inputs are not permitted"。
 _OPENAI_PREFIXES = ("gpt-", "o1", "o3", "o4", "chatgpt-")
 

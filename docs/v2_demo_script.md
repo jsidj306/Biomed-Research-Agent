@@ -12,9 +12,9 @@
 ## 一、录屏前准备（一次性，约 3 分钟）
 
 ```bash
-cd "D:/QLDownload/Cursor/项目1/biomed-research-agent"
+cd /path/to/biomed-research-agent
 
-# 1. 测试全绿（应显示 252 passed, 4 deselected, 0 warning）
+# 1. 测试全绿（无 failed，仅 slow 类 deselect）
 uv run pytest -q -m "not slow"
 
 # 2. lint 干净
@@ -24,7 +24,7 @@ uv run ruff check src/ tests/
 chcp 65001
 
 # 4. 确认 API key（场景 2/5 会真实调用）
-#    打开 .env，确认 OPENAI_API_KEY、NCBI_API_KEY 两行非空
+#    打开 .env，确认 ZHIPU_API_KEY、NCBI_API_KEY 两行非空
 ```
 
 - [ ] 场景 4 的 PDF：放一份**文字版**论文到 `data/papers/demo.pdf`（或改脚本顶部 `PDF_PATH`）；没有也不崩，会打印「跳过」提示
@@ -130,7 +130,7 @@ uv run streamlit run src/ui/app.py
 ## 四、收尾（压缩 + 保存）
 
 ```bash
-# 压缩（避免撑爆 git 仓库，见项目约定）
+# 压缩（避免大文件撑大 git 仓库）
 ffmpeg -i v2_demo.mp4 -crf 28 -preset veryslow v2_demo_compressed.mp4
 ```
 

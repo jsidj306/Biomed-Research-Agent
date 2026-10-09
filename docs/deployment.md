@@ -9,7 +9,7 @@
 - Python 3.11+
 - [uv](https://docs.astral.sh/uv/)（可选，本地开发用）
 - Docker + docker-compose（容器部署用）
-- 至少一个 OpenAI 兼容的 LLM API Key（见 `.env.example`）
+- 至少一个 LLM API Key（智谱 GLM / 月之暗面 Kimi，见 `.env.example`）
 
 ---
 
@@ -76,23 +76,23 @@ docker-compose down        # 停止（数据卷保留）
 1. 订阅 [HuggingFace PRO](https://huggingface.co/settings/billing)（$9/月）。
 2. 访问 [huggingface.co/new-space](https://huggingface.co/new-space)，选择
    **Docker** SDK，空间名如 `biomed-research-agent`。
-2. 克隆空仓库：
+3. 克隆空仓库：
 
    ```bash
    git clone https://huggingface.co/spaces/YOUR_USERNAME/biomed-research-agent
    cd biomed-research-agent
    ```
 
-3. 拷贝本项目文件（`src/`、`pyproject.toml`、`uv.lock`、`Dockerfile`、`.dockerignore`）。
-4. 在 Space 的 **Settings → Variables and secrets** 中配置所有环境变量（`OPENAI_API_KEY`
-   等，见 `.env.example`），**不要**把 `.env` 提交进仓库。
-5. 提交并推送：
+4. 拷贝本项目文件（`src/`、`pyproject.toml`、`uv.lock`、`Dockerfile`、`.dockerignore`）。
+5. 在 Space 的 **Settings → Variables and secrets** 中配置所有环境变量（`ZHIPU_API_KEY`
+   / `MOONSHOT_API_KEY` 等，见 `.env.example`），**不要**把 `.env` 提交进仓库。
+6. 提交并推送：
 
    ```bash
    git add -A && git commit -m "deploy biomed-research-agent" && git push
    ```
 
-6. Space 会自动构建 Docker 镜像并启动，构建完成后访问
+7. Space 会自动构建 Docker 镜像并启动，构建完成后访问
    `https://YOUR_USERNAME-biomed-research-agent.hf.space`。
 
 ### 3.2 方案二：免费替代（无需 HF PRO）
@@ -124,7 +124,7 @@ docker-compose down        # 停止（数据卷保留）
 
 ## 4. 生产环境清单
 
-- [ ] `.env` 已配置全部必填 Key（NCBI、OpenAI）
+- [ ] `.env` 已配置全部必填 Key（NCBI、智谱、月之暗面）
 - [ ] LangFuse Key 已配置（可观测性）
 - [ ] Neo4j 已启动（如启用知识图谱）
 - [ ] 中文字体已安装（PDF 导出用，Docker 镜像已内置 fonts-noto-cjk）

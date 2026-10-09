@@ -17,9 +17,9 @@
 ## 为什么与众不同
 
 - **7 个专职 Agent**——不是一个大 prompt。`Supervisor` → `Search` → `Review` →
-  `Summarizer` ⇄ `Critic` → `Writer` → `Planner`，用状态图 + 条件路由编排。
-- **自纠错闭环**——`Critic` 给初稿打分，不达标就退回 `Summarizer` 重写，直到通过
-  （有上限，最多返工 2 轮，防死循环）。
+  `Summarizer` → `Writer` ⇄ `Critic` → `Planner`，用状态图 + 条件路由编排。
+- **自纠错闭环**——`Critic` 给 `Writer` 的报告打分，不达标就退回 `Writer` 重写，直到
+  通过（有上限，最多返工 2 轮，防死循环）。
 - **确定性引用核查**——编造的 `[n]` 引用用纯正则 + 计数抓，不靠 LLM。只有 4 篇文献
   却出现 `[9]`，必然被标记为 high 严重度。
 - **跨模型交叉验证**——Critic 用两家不同厂商（GLM + Kimi）做真正的第二意见。
@@ -42,10 +42,10 @@ graph LR
         S[Supervisor] --> SE[Search]
         SE --> RV[Review]
         RV --> SU[Summarizer]
-        SU --> CR[Critic]
-        CR -->|分数<6 且 ≤2 轮| SU
-        CR -->|通过| WR[Writer]
-        WR --> PL[Planner]
+        SU --> WR[Writer]
+        WR --> CR[Critic]
+        CR -->|分数<6 且 ≤2 轮| WR
+        CR -->|通过| PL[Planner]
     end
 
     SE --> P[PubMed / arXiv / Semantic Scholar / bioRxiv]

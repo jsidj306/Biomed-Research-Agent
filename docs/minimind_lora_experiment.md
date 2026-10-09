@@ -51,7 +51,7 @@
 
 | 项 | 值 |
 |----|----|
-| 权重文件 | `D:/QLDownload/Cursor/项目1/pretrain_512.pth` |
+| 权重文件 | 本地 `pretrain_512.pth`（实验课产出，未随仓库分发） |
 | 架构 | MiniMind（RMSNorm + RoPE + GQA + SwiGLU） |
 | 层数 / 维度 | 2 层 / 512 |
 | 词表 | 6400（tokenizer 文件：`tokenizer.json` + `vocab.json`） |
@@ -88,8 +88,8 @@
 ```bash
 # 1) LoRA 微调 + 验证集困惑度评估（无需 GPU，约 1.5 分钟）
 uv run python train_lora_local.py \
-    --base "D:/QLDownload/Cursor/项目1/pretrain_512.pth" \
-    --tokenizer_dir "D:/QLDownload/Cursor/项目1" \
+    --base /path/to/pretrain_512.pth \
+    --tokenizer_dir /path/to/tokenizer \
     --data_path ./data/biomed_instruct.jsonl \
     --lora_rank 8 --lora_alpha 16 --epochs 3 --lr 1e-4
 ```
@@ -129,9 +129,9 @@ uv run python train_lora_local.py \
 
 ## 6. 复现
 
-1. 确认 `D:/QLDownload/Cursor/项目1/` 下存在 `pretrain_512.pth`、`tokenizer.json`、`vocab.json`
+1. 确认本地已存在 `pretrain_512.pth`、`tokenizer.json`、`vocab.json`（实验课产出的权重与词表）
 2. `uv run python scripts/generate_biomed_instruct.py --n_examples 800`（数据已生成可跳过）
-3. `uv run python train_lora_local.py --base D:/QLDownload/Cursor/项目1/pretrain_512.pth`
+3. `uv run python train_lora_local.py --base /path/to/pretrain_512.pth --tokenizer_dir /path/to/tokenizer`
 4. 生成对比：加载 `out/minimind-lora-local/lora_adapter.pt` 做问答，观察输出
 
 ## 7. 结论与下一步

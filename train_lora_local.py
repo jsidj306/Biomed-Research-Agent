@@ -8,8 +8,8 @@
 用法::
 
     uv run python train_lora_local.py \
-        --base "D:/QLDownload/Cursor/项目1/pretrain_512.pth" \
-        --tokenizer_dir "D:/QLDownload/Cursor/项目1" \
+        --base /path/to/pretrain_512.pth \
+        --tokenizer_dir /path/to/tokenizer \
         --data_path ./data/biomed_instruct.jsonl \
         --lora_rank 8 --lora_alpha 16 --epochs 3 --lr 1e-4
 
@@ -239,8 +239,8 @@ def train(args: argparse.Namespace) -> None:
 
 def parse_args() -> argparse.Namespace:
     p = argparse.ArgumentParser(description="MiniMind 本地 LoRA 微调")
-    p.add_argument("--base", default="D:/QLDownload/Cursor/项目1/pretrain_512.pth")
-    p.add_argument("--tokenizer_dir", default="D:/QLDownload/Cursor/项目1")
+    p.add_argument("--base", required=True, help="本地 MiniMind 基座权重 .pth 路径（实验课产出，未随仓库分发）")
+    p.add_argument("--tokenizer_dir", required=True, help="本地 tokenizer 目录（含 tokenizer.json / vocab.json）")
     p.add_argument("--data_path", default="./data/biomed_instruct.jsonl")
     p.add_argument("--lora_rank", type=int, default=8)
     p.add_argument("--lora_alpha", type=int, default=16)

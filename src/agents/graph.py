@@ -37,7 +37,7 @@ logger = logging.getLogger(__name__)
 
 # ── 常量 ────────────────────────────────────────────────────────────────
 
-# 分数低于该阈值时，Critic 判定报告不合格，打回 Summarize 重写
+# 分数低于该阈值时，Critic 判定报告不合格，打回 Writer 重写
 CRITIC_PASS_SCORE = 6.0
 # 最多返工次数（critic 最多跑 MAX_CRITIC_RETRIES + 1 轮，防死循环）
 MAX_CRITIC_RETRIES = 2

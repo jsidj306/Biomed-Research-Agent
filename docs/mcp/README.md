@@ -38,7 +38,7 @@ uv run pytest tests/test_mcp_server.py -v
     "biomed-research-agent": {
       "command": "uv",
       "args": ["run", "python", "src/mcp/server.py"],
-      "cwd": "D:/QLDownload/Cursor/项目1/biomed-research-agent"
+      "cwd": "/path/to/biomed-research-agent"
     }
   }
 }

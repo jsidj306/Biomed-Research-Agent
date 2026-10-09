@@ -82,7 +82,7 @@ Question: {QUERY}
 Provide a concise answer (3-5 bullet points) with citations to PMIDs."""
 
 response = llm.chat.completions.create(
-    model="gpt-3.5-turbo",
+    model="glm-5.2",
     messages=[{"role": "user", "content": prompt}],
     max_tokens=500,
     temperature=0.3

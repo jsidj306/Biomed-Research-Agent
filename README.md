@@ -18,10 +18,10 @@ Built with **LangChain + LangGraph** orchestration, **ChromaDB** vector retrieva
 ## What makes it different
 
 - **7 specialized agents** — not one giant prompt. `Supervisor` → `Search` → `Review` →
-  `Summarizer` ⇄ `Critic` → `Writer` → `Planner`, orchestrated as a state graph with
+  `Summarizer` → `Writer` ⇄ `Critic` → `Planner`, orchestrated as a state graph with
   conditional routing.
-- **Self-correcting loop** — the `Critic` grades each draft and sends it back to the
-  `Summarizer` for rewrite until it passes (bounded, max 2 rewrites).
+- **Self-correcting loop** — the `Critic` grades the `Writer`'s report and sends it
+  back for rewrite until it passes (bounded, max 2 rewrites).
 - **Deterministic citation checking** — fabricated `[n]` references are caught by plain
   regex + counting, *not* by an LLM, so a `[9]` with only 4 sources is always flagged.
 - **Cross-model validation** — the Critic uses two different vendors (GLM + Kimi) as a
@@ -48,10 +48,10 @@ graph LR
         S[Supervisor] --> SE[Search]
         SE --> RV[Review]
         RV --> SU[Summarizer]
-        SU --> CR[Critic]
-        CR -->|score < 6, ≤2 retries| SU
-        CR -->|pass| WR[Writer]
-        WR --> PL[Planner]
+        SU --> WR[Writer]
+        WR --> CR[Critic]
+        CR -->|score < 6, ≤2 retries| WR
+        CR -->|pass| PL[Planner]
     end
 
     SE --> P[PubMed / arXiv / Semantic Scholar / bioRxiv]

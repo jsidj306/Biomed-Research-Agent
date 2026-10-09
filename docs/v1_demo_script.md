@@ -7,7 +7,7 @@
 ## 一键启动（一条命令跑完 7 个场景）
 
 ```bash
-cd "D:/QLDownload/Cursor/项目1/biomed-research-agent"
+cd /path/to/biomed-research-agent
 uv run python notebooks/07_v1_demo.py
 ```
 
@@ -17,8 +17,8 @@ uv run python notebooks/07_v1_demo.py
 
 **演示前检查清单**
 
-- [ ] `uv run pytest tests/ -q -k "not slow"` 全绿（当前 178 passed）
-- [ ] `.env` 中 `NCBI_API_KEY` / `OPENAI_API_KEY` 有效（搜索和 LLM 会真实调用）
+- [ ] `uv run pytest tests/ -q -k "not slow"` 全绿
+- [ ] `.env` 中 `NCBI_API_KEY` / `ZHIPU_API_KEY` 有效（搜索和 LLM 会真实调用）
 - [ ] 浏览器无痕窗口，网络稳定（备用问题见下）
 
 **备用搜索问题**（如果主查询实时搜索慢，可改脚本里的 `QUERY`）

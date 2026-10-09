@@ -32,8 +32,8 @@
 ### Added
 
 - **7-Agent 编排**：新增 Critic / Writer / Planner 三个 Agent，组成
-  `Supervisor → Search → Review → Summarizer ⇄ Critic → Writer → Planner` 状态图。
-- **自纠错回环**：Critic 质检 + 条件路由，分数低于阈值（6.0）时打回 Summarizer 重写，
+  `Supervisor → Search → Review → Summarizer → Writer ⇄ Critic → Planner` 状态图。
+- **自纠错回环**：Critic 质检 + 条件路由，分数低于阈值（6.0）时打回 Writer 重写，
   最多返工 2 轮（`MAX_CRITIC_RETRIES`）。
 - **Critic Agent**（`src/agents/critic_agent.py`）：两模型交叉验证（GLM + Kimi）、
   事实核查、确定性引用核查（纯正则，`check_citations`）。

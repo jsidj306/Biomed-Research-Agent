@@ -13,7 +13,7 @@ V2.0 演示脚本（一键跑通 6 个场景，用于录屏）。
   - 所有外部调用（LLM / PDF / 检索）都包 try/except，单点失败只降级提示、不中断录屏
 
 注意:
-  - 场景 2/5 会真实调 LLM 与 PubMed，需 .env 里 OPENAI_API_KEY / NCBI_API_KEY 有效
+  - 场景 2/5 会真实调 LLM 与 PubMed，需 .env 里 ZHIPU_API_KEY / MOONSHOT_API_KEY / NCBI_API_KEY 有效
   - 场景 4/5 需要一份文字版 PDF，把顶部 PDF_PATH 改成你的文件路径（场景 5 会读全文作为首要证据）
   - 场景 5 的 PDF 导出：本地需 pandoc 3.x + typst（winget 安装）或 Docker 内
     weasyprint，后端缺失时会打印友好提示而非崩溃

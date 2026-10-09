@@ -7,9 +7,9 @@
 用法::
 
     uv run python scripts/eval_minimind_compare.py \
-        --tokenizer_dir "D:/QLDownload/Cursor/项目1" \
-        --pretrain "D:/QLDownload/Cursor/项目1/pretrain_512.pth" \
-        --sft "D:/QLDownload/Cursor/项目1/full_sft_512.pth" \
+        --tokenizer_dir /path/to/tokenizer \
+        --pretrain /path/to/pretrain_512.pth \
+        --sft /path/to/full_sft_512.pth \
         --data ./data/val.jsonl
 """
 
@@ -80,9 +80,9 @@ def generate_answer(model, tokenizer, prompt: str, max_new: int = 64) -> str:
 
 def parse_args() -> argparse.Namespace:
     p = argparse.ArgumentParser(description="MiniMind 预训练 vs SFT 困惑度对比")
-    p.add_argument("--tokenizer_dir", default="D:/QLDownload/Cursor/项目1")
-    p.add_argument("--pretrain", default="D:/QLDownload/Cursor/项目1/pretrain_512.pth")
-    p.add_argument("--sft", default="D:/QLDownload/Cursor/项目1/full_sft_512.pth")
+    p.add_argument("--tokenizer_dir", required=True, help="本地 tokenizer 目录（含 tokenizer.json / vocab.json）")
+    p.add_argument("--pretrain", required=True, help="本地 pretrain_512.pth 路径（实验课产出，未随仓库分发）")
+    p.add_argument("--sft", required=True, help="本地 full_sft_512.pth 路径（实验课产出，未随仓库分发）")
     p.add_argument("--data", default="./data/val.jsonl")
     p.add_argument("--max_len", type=int, default=512)
     p.add_argument("--demo", type=str, default="What is CAR-T cell therapy?")

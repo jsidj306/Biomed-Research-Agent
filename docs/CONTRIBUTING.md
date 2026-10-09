@@ -84,7 +84,6 @@ uv run pytest tests/test_critic_agent.py -v   # 单文件
 
 | 坑 | 规避方式 |
 |----|---------|
-| 项目 1.xlsx 用 openpyxl save 会丢格式 | 见项目 memory；用 shared string 追加，写入前关闭 Excel |
-| 大视频提交撑爆 git 仓库 | 录屏等大文件先用 ffmpeg 压缩或走 Git LFS |
+| 大文件提交撑大 git 仓库 | 录屏等大文件先用 ffmpeg 压缩，或走 Git LFS |
 | 扫描版 PDF 提取为空 | 全文加载器会明确报错，需提供文字版 PDF 或启用 OCR |
 | 容器内连不上 chroma/neo4j | 用服务名（`chroma`/`neo4j`）而非 `localhost` 做 host |
